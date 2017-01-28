@@ -10,6 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "openlayers": "^3.20.1",
     "socket.io-client": "^1.7.2"
+  },
+  "devDependencies": {
+    "style-loader": "^0.13.1",
+    "css-loader": "^0.26.1"
   }
 }

@@ -9,5 +9,10 @@ module.exports = {
 	},
 	devServer: {
 		contentBase: './build'
+	},
+	module: {
+		loaders: [
+			{ test: /\.css$/, loader: "style-loader!css-loader" }
+		]
 	}
 };

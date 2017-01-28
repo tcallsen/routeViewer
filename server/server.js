@@ -27,6 +27,7 @@ io.on('connection', function(socket){
 	
 	console.log('socket connection established with user');
 
+	/*
 	socket.on('handshake', function(message){
 		console.log('user message recieved: ' + message);
 		console.log('replying to user');
@@ -36,6 +37,7 @@ io.on('connection', function(socket){
 	socket.on('message', function(message){
 		console.log('user message recieved: ' + message);
 	});
+	*/
 
 });
 
