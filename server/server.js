@@ -3,8 +3,19 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-//static files
-app.use('/static', express.static('static'))
+//webpack dev server
+var webpack = require('webpack');
+var webpackDevMiddleware = require('webpack-dev-middleware');
+var webpackHotMiddleware = require('webpack-hot-middleware');
+var webpackConfig = require('./webpack.dev.config');
+var compiler = webpack(webpackConfig);
+app.use(webpackDevMiddleware(compiler, {
+    publicPath: webpackConfig.output.publicPath,
+    stats: {colors: true}
+}));
+app.use(webpackHotMiddleware(compiler, {
+    log: console.log
+}))
 
 //home page
 app.get('/', function(req, res){
