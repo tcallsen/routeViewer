@@ -13,7 +13,7 @@ app.get('/', function(req, res){
 
 //websocket behavior
 io.on('connection', function(socket){
-	console.log('a user connected');
+	console.log('a user connected nodemon');
 });
 
 //start server
