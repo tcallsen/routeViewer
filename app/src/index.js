@@ -14,6 +14,9 @@ socket.on('connect', function(){
 	socket.on('handshake', () => socket.send('good day'));
 	*/
 });
+socket.on('newRoutes', function(newRoutes){
+	console.log('newRoutes', newRoutes.length);
+});
 
 // OPEN LAYERS map
 var map = new ol.Map({
