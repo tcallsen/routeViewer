@@ -11,7 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "openlayers": "^3.20.1",
-    "socket.io-client": "^1.7.2"
+    "socket.io-client": "^1.7.2",
+    "superagent": "^3.4.1"
   },
   "devDependencies": {
     "style-loader": "^0.13.1",

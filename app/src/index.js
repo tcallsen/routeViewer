@@ -1,3 +1,6 @@
+//misc requires
+var request = require('superagent');
+
 //open layers and styles
 var ol = require('openlayers');
 require('openlayers/css/ol.css');
@@ -9,6 +12,16 @@ var socket = io();
 socket.on('connect', function(){
 	console.log('socket connceted');
 });
+
+// JS APP STATE
+var appState = {
+	DOM: {},
+	routing: {
+		active: false,
+		startCoord: null,
+		endCoord: null
+	},
+};
 
 socket.on('newRoutes', function(newRoutes){
 	
@@ -36,7 +49,7 @@ var routesLayer = new ol.layer.Vector({
 });
 
 var map = new ol.Map({
-	target: 'app',
+	target: 'map',
 	layers: [
       	new ol.layer.Tile({
 	        source: new ol.source.OSM({
@@ -55,3 +68,49 @@ var map = new ol.Map({
 		zoom: 13
 	})
 });
+
+map.on('click', (event) => {
+
+	if (appState.routing.active) {
+		
+		appState.DOM.map.classList.add('crosshair');
+
+		if (!appState.routing.startCoord) appState.routing.startCoord = map.getCoordinateFromPixel(event.pixel);
+		else {
+			
+			appState.routing.endCoord = map.getCoordinateFromPixel(event.pixel);
+
+			appState.DOM.map.classList.remove('crosshair');
+
+			console.log('need to route from: ' + appState.routing.startCoord + ' to ' + appState.routing.endCoord);
+
+			request.get('http://gallery.gritto.net').end( (err, res) => {
+
+				console.log( res );
+
+			});
+
+			appState.routing = {
+				active: false,
+				startCoord: null,
+				endCoord: null
+			};
+
+		}
+
+	}
+
+});
+
+window.addEventListener('load', () => {
+	
+	document.getElementById('getRoute').addEventListener('click', () => {
+		appState.routing.active = true;
+	});
+
+	appState.DOM.map = document.getElementById('map');
+
+	console.log( appState );
+
+});
+
