@@ -38,33 +38,50 @@ http.listen(3000, function(){
 var sentRoutes = {};
 var filePath = path.join('/Users/Taylor/Desktop/routes.json');
 var watchLock = false; //use watchLock to prevent extra fs.watch events from firing WHILE file is being updated
-fs.watch( filePath , {encoding: 'buffer'}, (eventType) => {
-	watchLock = true;
-	setTimeout(() => {
-		//send only new routes forward on file update 
-		var newRoutes = [];
-		fs.readFile(filePath, {encoding: 'utf-8'}, function(err,fileData){
-		    
-		    //read in updated file
-		    fileData.split(/\r?\n/).forEach( (route,index) => {
-		    	//skip empty lines/routes
-		    	if (!route.length) return;
-		    	//hash route to detect and remove duplicates
-		    	var routeHash = crypto.createHash('sha256').update(route).digest('hex');
-		    	if (Object.keys(sentRoutes).indexOf( routeHash ) == -1) {
-		    		sentRoutes[routeHash] = ''; //track route as sent
-		    		newRoutes.push( route );
-		    	}
-		    });
 
-			//send new routes to connected sockets
-			if (newRoutes.length) {
-		    	Object.values(io.sockets.connected).forEach( socket => {
-					socket.emit('newRoutes', newRoutes );
-				});
-		    }
+//check to ensure file exists
+var checkFilePromise = new Promise( (resolve,reject) => {
+	fs.open(filePath,'r',function(err, fd){
+		if (err) {
+			fs.writeFile(filePath, '', function(err) {
+				if (err) console.log('ERROR WRITING temp routes text file!! Exiting');
+				else resolve();
+			});
+		} else resolve();
+	});
+});
 
-		});
-		watchLock = false;
-	}, 500);
+checkFilePromise.then( () => {
+
+	fs.watch( filePath , {encoding: 'buffer'}, (eventType) => {
+		watchLock = true;
+		setTimeout(() => {
+			//send only new routes forward on file update 
+			var newRoutes = [];
+			fs.readFile(filePath, {encoding: 'utf-8'}, function(err,fileData){
+			    
+			    //read in updated file
+			    fileData.split(/\r?\n/).forEach( (route,index) => {
+			    	//skip empty lines/routes
+			    	if (!route.length) return;
+			    	//hash route to detect and remove duplicates
+			    	var routeHash = crypto.createHash('sha256').update(route).digest('hex');
+			    	if (Object.keys(sentRoutes).indexOf( routeHash ) == -1) {
+			    		sentRoutes[routeHash] = ''; //track route as sent
+			    		newRoutes.push( route );
+			    	}
+			    });
+
+				//send new routes to connected sockets
+				if (newRoutes.length) {
+			    	Object.values(io.sockets.connected).forEach( socket => {
+						socket.emit('newRoutes', newRoutes );
+					});
+			    }
+
+			});
+			watchLock = false;
+		}, 500);
+	});
+
 });
