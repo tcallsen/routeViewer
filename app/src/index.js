@@ -1,5 +1,6 @@
 //misc requires
 var request = require('superagent');
+var uuid = require('node-uuid');
 require('./css/main.css');
 
 //open layers and styles
@@ -29,18 +30,16 @@ var appState = {
 	}
 };
 
-socket.on('newRoutes', function(newRoutes){
+socket.on('newRoute', function(route){
 	
-	console.log('newRoutes received:', newRoutes.length);
+	console.log('newRoute received; length: ', route.length);
 
 	var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
 
-	newRoutes.forEach( route => {
-		var routeFeature = geoJsonParser.readFeature( route );
-		appState.map.routesLayer.getSource().addFeature( routeFeature ); 
-	}); 
+	var routeFeatures = geoJsonParser.readFeatures( route );
+	appState.map.routesLayer.getSource().addFeatures( routeFeatures ); 
 
-	if (appstate.map.map) appState.map.map.getView().fit( appState.map.routesLayer.getSource().getExtent(), appState.map.map.getSize() );
+	//if (appState.map.map) appState.map.map.getView().fit( appState.map.routesLayer.getSource().getExtent(), appState.map.map.getSize() );
 
 });
 
@@ -88,15 +87,10 @@ appState.map.map.on('click', (event) => {
 			appState.DOM.map.classList.remove('crosshair');
 
 			request.post('http://localhost:8080/graphWebApiSpring/')
-				.send( appState.routing )
+				.send( Object.assign( {}, appState.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() } ) )
 				.set('Accept', 'application/json')
 				.end( (err, res) => {
-					
-					console.log('route returned from backend');
-					var geoJsonParser = new ol.format.GeoJSON();
-					var routeFeature = geoJsonParser.readFeature( res.body.features[0] );
-					appState.map.routesLayer.getSource().addFeature( routeFeature ); 
-
+					console.log('route returned from backend', res.body);
 				});
 
 			appState.routing = {
