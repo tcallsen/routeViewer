@@ -21,6 +21,11 @@ var appState = {
 		startCoord: null,
 		endCoord: null
 	},
+	map: {
+		map: null,
+		routesLayer: null,
+		routes: []
+	}
 };
 
 socket.on('newRoutes', function(newRoutes){
@@ -28,27 +33,26 @@ socket.on('newRoutes', function(newRoutes){
 	console.log('newRoutes received:', newRoutes.length);
 
 	var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
-	var routesLayerSource = routesLayer.getSource();
 
 	newRoutes.forEach( route => {
 		var routeFeature = geoJsonParser.readFeature( route );
-		routesLayerSource.addFeature( routeFeature ); 
+		appState.map.routesLayer.getSource().addFeature( routeFeature ); 
 	}); 
 
-	if (map) map.getView().fit( routesLayerSource.getExtent(), map.getSize() );
+	if (appstate.map.map) appState.map.map.getView().fit( appState.map.routesLayer.getSource().getExtent(), appState.map.map.getSize() );
 
 });
 
 // OPEN LAYERS map
 
-var routesLayer = new ol.layer.Vector({
+appState.map.routesLayer = new ol.layer.Vector({
 	source: new ol.source.Vector({
 		features:[],
 		wrapX: false
 	}),
 });
 
-var map = new ol.Map({
+appState.map.map = new ol.Map({
 	target: 'map',
 	layers: [
       	new ol.layer.Tile({
@@ -60,7 +64,7 @@ var map = new ol.Map({
 	            ]
 	        })
 	    }),
-	    routesLayer
+	    appState.map.routesLayer
 	],
 	view: new ol.View({
 		projection: 'EPSG:4326',
@@ -69,13 +73,13 @@ var map = new ol.Map({
 	})
 });
 
-map.on('click', (event) => {
+appState.map.map.on('click', (event) => {
 
 	if (appState.routing.active) {
 		
 		appState.DOM.map.classList.add('crosshair');
 
-		var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( map.getCoordinateFromPixel(event.pixel) ) );
+		var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( appState.map.map.getCoordinateFromPixel(event.pixel) ) );
 
 		if (!appState.routing.startCoord) appState.routing.startCoord = clickedPointWkt;
 		else {
@@ -92,7 +96,7 @@ map.on('click', (event) => {
 					console.log('route returned from backend');
 					var geoJsonParser = new ol.format.GeoJSON();
 					var routeFeature = geoJsonParser.readFeature( res.body.features[0] );
-					routesLayer.getSource().addFeature( routeFeature ); 
+					appState.map.routesLayer.getSource().addFeature( routeFeature ); 
 
 				});
 
