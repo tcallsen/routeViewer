@@ -36,6 +36,8 @@ http.listen(3000, function(){
 
 // POLL FILE and push any new routes to frontend
 var sentRoutes = {};
+var sentStartGuids = {};
+var sentEndGuids = {};
 var filePath = path.join('/Users/Taylor/Desktop/routes.json');
 var watchLock = false; //use watchLock to prevent extra fs.watch events from firing WHILE file is being updated
 
@@ -57,27 +59,54 @@ checkFilePromise.then( () => {
 		watchLock = true;
 		setTimeout(() => {
 			//send only new routes forward on file update 
-			var newRoutes = [];
+			//var newRoutes = [];
 			fs.readFile(filePath, {encoding: 'utf-8'}, function(err,fileData){
 			    
 			    //read in updated file
-			    fileData.split(/\r?\n/).forEach( (route,index) => {
+			    fileData.split(/\r?\n/).forEach( (message,index) => {
+			  
 			    	//skip empty lines/routes
-			    	if (!route.length) return;
-			    	//hash route to detect and remove duplicates
-			    	var routeHash = crypto.createHash('sha256').update(route).digest('hex');
-			    	if (Object.keys(sentRoutes).indexOf( routeHash ) == -1) {
-			    		sentRoutes[routeHash] = ''; //track route as sent
-			    		newRoutes.push( route );
+			    	if (!message.length) return;
+
+			    	var messageObject = JSON.parse(message);
+
+			    	//parse and send forward new routestart messages
+			    	if (messageObject.type === 'routestart' && Object.keys(sentStartGuids).indexOf( messageObject.guid ) == -1) {
+			    		sentStartGuids[messageObject.guid] = '';
+			    		Object.keys(io.sockets.connected).forEach( socketKey => {
+							io.sockets.connected[socketKey].emit('routestart', messageObject.guid );
+						});
+		    		}
+
+		    		//parse and send forward new routeend messages
+			    	if (messageObject.type === 'routeend' && Object.keys(sentEndGuids).indexOf( messageObject.guid ) == -1) {
+			    		sentEndGuids[messageObject.guid] = '';
+			    		Object.keys(io.sockets.connected).forEach( socketKey => {
+							io.sockets.connected[socketKey].emit('routeend', messageObject.guid );
+						});
+		    		}
+
+			    	//parse and send forward new routes
+			    	if (messageObject.type === 'FeatureCollection') {
+						//hash route to detect and remove duplicates
+				    	var routeHash = crypto.createHash('sha256').update(message).digest('hex');
+				    	if (Object.keys(sentRoutes).indexOf( routeHash ) == -1) {
+				    		sentRoutes[routeHash] = ''; //track route as sent
+				    		//newRoutes.push( message );
+				    		Object.keys(io.sockets.connected).forEach( socketKey => {
+								io.sockets.connected[socketKey].emit('newRoute', message );
+							});
+				    	}
 			    	}
+
 			    });
 
 				//send new routes to connected sockets
-				if (newRoutes.length) {
+				/* if (newRoutes.length) {
 			    	Object.values(io.sockets.connected).forEach( socket => {
 						socket.emit('newRoutes', newRoutes );
 					});
-			    }
+			    } */
 
 			});
 			watchLock = false;
