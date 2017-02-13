@@ -75,20 +75,26 @@ map.on('click', (event) => {
 		
 		appState.DOM.map.classList.add('crosshair');
 
-		if (!appState.routing.startCoord) appState.routing.startCoord = map.getCoordinateFromPixel(event.pixel);
+		var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( map.getCoordinateFromPixel(event.pixel) ) );
+
+		if (!appState.routing.startCoord) appState.routing.startCoord = clickedPointWkt;
 		else {
 			
-			appState.routing.endCoord = map.getCoordinateFromPixel(event.pixel);
+			appState.routing.endCoord = clickedPointWkt;
 
 			appState.DOM.map.classList.remove('crosshair');
 
-			console.log('need to route from: ' + appState.routing.startCoord + ' to ' + appState.routing.endCoord);
+			request.post('http://localhost:8080/graphWebApiSpring/')
+				.send( appState.routing )
+				.set('Accept', 'application/json')
+				.end( (err, res) => {
+					
+					console.log('route returned from backend');
+					var geoJsonParser = new ol.format.GeoJSON();
+					var routeFeature = geoJsonParser.readFeature( res.body.features[0] );
+					routesLayer.getSource().addFeature( routeFeature ); 
 
-			request.get('http://gallery.gritto.net').end( (err, res) => {
-
-				console.log( res );
-
-			});
+				});
 
 			appState.routing = {
 				active: false,
