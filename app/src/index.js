@@ -1,5 +1,6 @@
 //misc requires
 var request = require('superagent');
+require('./css/main.css');
 
 //open layers and styles
 var ol = require('openlayers');
@@ -76,8 +77,6 @@ appState.map.map = new ol.Map({
 appState.map.map.on('click', (event) => {
 
 	if (appState.routing.active) {
-		
-		appState.DOM.map.classList.add('crosshair');
 
 		var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( appState.map.map.getCoordinateFromPixel(event.pixel) ) );
 
@@ -116,6 +115,7 @@ window.addEventListener('load', () => {
 	
 	document.getElementById('getRoute').addEventListener('click', () => {
 		appState.routing.active = true;
+		appState.DOM.map.classList.add('crosshair');
 	});
 
 	appState.DOM.map = document.getElementById('map');
