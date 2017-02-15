@@ -1,0 +1,7 @@
+div#map {
+
+}
+
+div#map.crosshair {
+	cursor: crosshair;
+}

@@ -1,3 +1,8 @@
+//misc requires
+var request = require('superagent');
+var uuid = require('node-uuid');
+require('./css/main.css');
+
 //open layers and styles
 var ol = require('openlayers');
 require('openlayers/css/ol.css');
@@ -10,33 +15,45 @@ socket.on('connect', function(){
 	console.log('socket connceted');
 });
 
-socket.on('newRoutes', function(newRoutes){
+// JS APP STATE
+var appState = {
+	DOM: {},
+	routing: {
+		active: false,
+		startCoord: null,
+		endCoord: null
+	},
+	map: {
+		map: null,
+		routesLayer: null,
+		routes: []
+	}
+};
+
+socket.on('newRoute', function(route){
 	
-	console.log('newRoutes received:', newRoutes.length);
+	console.log('newRoute received; length: ', route.length);
 
 	var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
-	var routesLayerSource = routesLayer.getSource();
 
-	newRoutes.forEach( route => {
-		var routeFeature = geoJsonParser.readFeature( route );
-		routesLayerSource.addFeature( routeFeature ); 
-	}); 
+	var routeFeatures = geoJsonParser.readFeatures( route );
+	appState.map.routesLayer.getSource().addFeatures( routeFeatures ); 
 
-	if (map) map.getView().fit( routesLayerSource.getExtent(), map.getSize() );
+	//if (appState.map.map) appState.map.map.getView().fit( appState.map.routesLayer.getSource().getExtent(), appState.map.map.getSize() );
 
 });
 
 // OPEN LAYERS map
 
-var routesLayer = new ol.layer.Vector({
+appState.map.routesLayer = new ol.layer.Vector({
 	source: new ol.source.Vector({
 		features:[],
 		wrapX: false
 	}),
 });
 
-var map = new ol.Map({
-	target: 'app',
+appState.map.map = new ol.Map({
+	target: 'map',
 	layers: [
       	new ol.layer.Tile({
 	        source: new ol.source.OSM({
@@ -47,7 +64,7 @@ var map = new ol.Map({
 	            ]
 	        })
 	    }),
-	    routesLayer
+	    appState.map.routesLayer
 	],
 	view: new ol.View({
 		projection: 'EPSG:4326',
@@ -55,3 +72,49 @@ var map = new ol.Map({
 		zoom: 13
 	})
 });
+
+appState.map.map.on('click', (event) => {
+
+	if (appState.routing.active) {
+
+		var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( appState.map.map.getCoordinateFromPixel(event.pixel) ) );
+
+		if (!appState.routing.startCoord) appState.routing.startCoord = clickedPointWkt;
+		else {
+			
+			appState.routing.endCoord = clickedPointWkt;
+
+			appState.DOM.map.classList.remove('crosshair');
+
+			request.post('http://localhost:8080/graphWebApiSpring/')
+				.send( Object.assign( {}, appState.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() } ) )
+				.set('Accept', 'application/json')
+				.end( (err, res) => {
+					console.log('route returned from backend', res.body);
+				});
+
+			appState.routing = {
+				active: false,
+				startCoord: null,
+				endCoord: null
+			};
+
+		}
+
+	}
+
+});
+
+window.addEventListener('load', () => {
+	
+	document.getElementById('getRoute').addEventListener('click', () => {
+		appState.routing.active = true;
+		appState.DOM.map.classList.add('crosshair');
+	});
+
+	appState.DOM.map = document.getElementById('map');
+
+	console.log( appState );
+
+});
+
