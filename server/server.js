@@ -61,7 +61,7 @@ http.listen(3000, function(){
 var sentRoutes = {};
 var sentStartGuids = {};
 var sentEndGuids = {};
-var filePath = path.join('/Users/Taylor/Desktop/routes.json');
+var filePath = path.join( webappConfig.routesInterface.path );
 var watchLock = false; //use watchLock to prevent extra fs.watch events from firing WHILE file is being updated
 
 //check to ensure file exists
