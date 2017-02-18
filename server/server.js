@@ -1,3 +1,6 @@
+//load config
+var webappConfig = require('/etc/gritto/graphWebApi.conf.json');
+
 //web and framework
 var express = require('express');
 var app = express();
@@ -29,9 +32,29 @@ app.get('/', function(req, res){
 	res.sendFile(__dirname + '/static/index.html');
 });
 
+// CONFIG - serve config options to frontend
+app.get('/config.json', function(req, res){
+	
+	var outgoingConfid = Object.assign( {} , webappConfig );
+	
+	//trim non relevate webappConfig options before sending	
+	delete outgoingConfid.routesInterface;
+	delete outgoingConfid.graphDbLocation;
+
+	//write response
+	res.writeHead(200, {"Content-Type": "application/json"});
+	res.end( JSON.stringify( outgoingConfid ) );
+
+});
+
 // SERVER
 http.listen(3000, function(){
+
 	console.log('listening on *:3000');
+
+	console.log('configuration:');
+	console.log(webappConfig);
+
 });
 
 // POLL FILE and push any new routes to frontend
