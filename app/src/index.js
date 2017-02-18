@@ -86,7 +86,10 @@ appState.map.map.on('click', (event) => {
 
 			appState.DOM.map.classList.remove('crosshair');
 
-			request.post('http://localhost:8080/graphWebApiSpring/')
+			//derive routing REST endpoint from webappConfig
+			var routingRestEndpointUrl = webappConfig.routingRestEndpoint.protocol + '://' + webappConfig.routingRestEndpoint.host + ':' + webappConfig.routingRestEndpoint.port + '/' + webappConfig.routingRestEndpoint.path + '/';
+
+			request.post( routingRestEndpointUrl )
 				.send( Object.assign( {}, appState.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() } ) )
 				.set('Accept', 'application/json')
 				.end( (err, res) => {
@@ -107,6 +110,14 @@ appState.map.map.on('click', (event) => {
 
 window.addEventListener('load', () => {
 	
+	//load webappConfig from backend (contains things like routing REST endpoint, etc.)
+	request.get('/config.json')
+		.set('Accept', 'application/json')
+		.end( (err, res) => {
+			window.webappConfig = Object.assign( {} , res.body );
+			console.log( 'config:' , webappConfig );
+		});
+
 	document.getElementById('getRoute').addEventListener('click', () => {
 		appState.routing.active = true;
 		appState.DOM.map.classList.add('crosshair');
@@ -114,7 +125,7 @@ window.addEventListener('load', () => {
 
 	appState.DOM.map = document.getElementById('map');
 
-	console.log( appState );
+	console.log( 'appState:' ,appState );
 
 });
 
