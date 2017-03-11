@@ -15,6 +15,13 @@ socket.on('connect', function(){
 	console.log('socket connceted');
 });
 
+// REACT & REFLUX
+
+import React from 'react';
+import BaseStore from './js/stores/base';
+
+console.log( 'BaseStore' , BaseStore );
+
 // JS APP STATE
 var appState = {
 	DOM: {},
