@@ -67,8 +67,8 @@ appState.map.map = new ol.Map({
 	    appState.map.routesLayer
 	],
 	view: new ol.View({
-		projection: 'EPSG:4326',
-		center: [-89.386311071876291, 43.0767353342079],
+		//projection: 'EPSG:4326',
+		center: to3857( [-89.386311071876291, 43.0767353342079] ),
 		zoom: 13
 	})
 });
@@ -77,7 +77,7 @@ appState.map.map.on('click', (event) => {
 
 	if (appState.routing.active) {
 
-		var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( appState.map.map.getCoordinateFromPixel(event.pixel) ) );
+		var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( to4326(appState.map.map.getCoordinateFromPixel(event.pixel)) ) );
 
 		if (!appState.routing.startCoord) appState.routing.startCoord = clickedPointWkt;
 		else {
@@ -93,7 +93,14 @@ appState.map.map.on('click', (event) => {
 				.send( Object.assign( {}, appState.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() } ) )
 				.set('Accept', 'application/json')
 				.end( (err, res) => {
+					
 					console.log('route returned from backend', res.body);
+
+					var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
+
+					var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
+					appState.map.routesLayer.getSource().addFeatures( routeFeatures ); 
+
 				});
 
 			appState.routing = {
@@ -129,3 +136,11 @@ window.addEventListener('load', () => {
 
 });
 
+
+function to3857( target ) {
+	return ol.proj.transform( target , 'EPSG:4326','EPSG:3857')
+}
+
+function to4326( target ) {
+	return ol.proj.transform( target , 'EPSG:3857', 'EPSG:4326')	
+}
