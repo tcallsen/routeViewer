@@ -1,25 +1,35 @@
 //misc requires
 var request = require('superagent');
 var uuid = require('node-uuid');
-require('./css/main.css');
+require('../css/main.css');
 
 //open layers and styles
 var ol = require('openlayers');
 require('openlayers/css/ol.css');
 
-var io = require('socket.io-client');
-
-// WEB SOCKET
-var socket = io();
-socket.on('connect', function(){
-	console.log('socket connceted');
-});
-
 // REACT & REFLUX
 
 import React from 'react';
-import BaseStore from './js/stores/base';
+import {render} from 'react-dom';
 
+class App extends React.Component {
+	render () {
+		return (
+
+			<div>
+				<h3>Route Viewer</h3>
+				<a href='https://git.dev.gritto.net:8888/taylor/graphWebApi/milestones' target="_blank">GitLab Repository</a>
+			</div>
+
+		);
+	}
+}
+
+
+render(<App/>, document.getElementById('app'));
+
+
+/*
 console.log( 'BaseStore' , BaseStore );
 
 // JS APP STATE
@@ -36,6 +46,14 @@ var appState = {
 		routes: []
 	}
 };
+
+var io = require('socket.io-client');
+
+// WEB SOCKET
+var socket = io();
+socket.on('connect', function(){
+	console.log('socket connceted');
+});
 
 socket.on('newRoute', function(route){
 	
@@ -151,3 +169,4 @@ function to3857( target ) {
 function to4326( target ) {
 	return ol.proj.transform( target , 'EPSG:3857', 'EPSG:4326')	
 }
+*/

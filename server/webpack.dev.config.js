@@ -4,7 +4,7 @@ var APP_DIR = path.resolve(__dirname, '../app/src');
 
 module.exports = {
 	entry: [
-		APP_DIR + '/index.js'
+		APP_DIR + '/js/app.jsx'
 	],
 	output: {
 		path: '/',
