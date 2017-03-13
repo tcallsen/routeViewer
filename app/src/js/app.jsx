@@ -1,4 +1,4 @@
-//misc requires
+/* //misc requires
 var request = require('superagent');
 var uuid = require('uuid');
 require('../css/main.css');
@@ -8,11 +8,13 @@ var ol = require('openlayers');
 require('openlayers/css/ol.css');
 
 // REACT & REFLUX
-import React from 'react';
-import Reflux from 'reflux';
-import {render} from 'react-dom';
+ */
 
-import AppStore from './stores/AppStore';
+import Reflux from 'reflux';
+import ReactDOM from 'react-dom';
+import React from 'react';
+
+import AppStore from './stores/AppStore.js';
 
 class App extends Reflux.Component {
 	
@@ -20,7 +22,7 @@ class App extends Reflux.Component {
 		console.log('App constructor');
 		super(props);
 		this.state = {};
-		//this.store = AppStore;
+		this.store = AppStore;
 	}
 
 	render () {
@@ -37,7 +39,7 @@ class App extends Reflux.Component {
 }
 
 
-render(<App/>, document.getElementById('app'));
+ReactDOM.render(<App/>, document.getElementById('app'));
 
 
 /*

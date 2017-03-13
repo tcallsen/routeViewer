@@ -29,3 +29,5 @@ class AppStore extends Reflux.Store {
     } */
 
 }
+
+module.exports = AppStore;
