@@ -32,6 +32,9 @@ app.get('/', function(req, res){
 	res.sendFile(__dirname + '/static/index.html');
 });
 
+// STATIC FILES
+app.use('/static', express.static(path.join(__dirname, 'static')))
+
 // CONFIG - serve config options to frontend
 app.get('/config.json', function(req, res){
 	
