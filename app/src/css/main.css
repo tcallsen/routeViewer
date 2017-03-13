@@ -1,7 +1,14 @@
-div#map {
-
+html, body, div#app {
+    height: 100%;
+    margin: 0;
 }
 
-div#map.crosshair {
+div#mapContainer {
+	height: 100%;
+	width: 100%;
+	position: fixed;
+}
+
+div#mapContainer.crosshair {
 	cursor: crosshair;
 }

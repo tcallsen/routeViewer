@@ -1,20 +1,19 @@
 /* //misc requires
 var request = require('superagent');
 var uuid = require('uuid');
-require('../css/main.css');
 
-//open layers and styles
-var ol = require('openlayers');
-require('openlayers/css/ol.css');
 
-// REACT & REFLUX
  */
 
+require('../css/main.css');
+
+// REACT & REFLUX
 import Reflux from 'reflux';
 import ReactDOM from 'react-dom';
 import React from 'react';
 
 import AppStore from './stores/AppStore.js';
+import Map from './components/map.jsx';
 
 class App extends Reflux.Component {
 	
@@ -26,12 +25,13 @@ class App extends Reflux.Component {
 	}
 
 	render () {
-		console.log('App' , this );
+		
+		console.log('App render');
+
 		return (
 
 			<div>
-				<h3>Route Viewer</h3>
-				<a href='https://git.dev.gritto.net:8888/taylor/graphWebApi/milestones' target="_blank">GitLab Repository</a>
+				<Map />
 			</div>
 
 		);
@@ -83,33 +83,7 @@ socket.on('newRoute', function(route){
 
 // OPEN LAYERS map
 
-appState.map.routesLayer = new ol.layer.Vector({
-	source: new ol.source.Vector({
-		features:[],
-		wrapX: false
-	}),
-});
 
-appState.map.map = new ol.Map({
-	target: 'map',
-	layers: [
-      	new ol.layer.Tile({
-	        source: new ol.source.OSM({
-	            url: 'http://mt{0-3}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-	            attributions: [
-	                new ol.Attribution({ html: '© Google' }),
-	                new ol.Attribution({ html: '<a href="https://developers.google.com/maps/terms">Terms of Use.</a>' })
-	            ]
-	        })
-	    }),
-	    appState.map.routesLayer
-	],
-	view: new ol.View({
-		//projection: 'EPSG:4326',
-		center: to3857( [-89.386311071876291, 43.0767353342079] ),
-		zoom: 13
-	})
-});
 
 appState.map.map.on('click', (event) => {
 
@@ -175,11 +149,4 @@ window.addEventListener('load', () => {
 });
 
 
-function to3857( target ) {
-	return ol.proj.transform( target , 'EPSG:4326','EPSG:3857')
-}
-
-function to4326( target ) {
-	return ol.proj.transform( target , 'EPSG:3857', 'EPSG:4326')	
-}
 */
