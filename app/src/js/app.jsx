@@ -1,6 +1,6 @@
 //misc requires
 var request = require('superagent');
-var uuid = require('node-uuid');
+var uuid = require('uuid');
 require('../css/main.css');
 
 //open layers and styles
@@ -8,12 +8,23 @@ var ol = require('openlayers');
 require('openlayers/css/ol.css');
 
 // REACT & REFLUX
-
 import React from 'react';
+import Reflux from 'reflux';
 import {render} from 'react-dom';
 
-class App extends React.Component {
+import AppStore from './stores/AppStore';
+
+class App extends Reflux.Component {
+	
+	constructor(props) {
+		console.log('App constructor');
+		super(props);
+		this.state = {};
+		//this.store = AppStore;
+	}
+
 	render () {
+		console.log('App' , this );
 		return (
 
 			<div>
