@@ -1,32 +1,64 @@
 import Reflux from 'reflux';
+import request from 'superagent';
 
-//var Actions = Reflux.createActions(['firstAction', 'secondAction']);
+import Actions from '../actions/actions.js';
 
 class AppStore extends Reflux.Store {
-    
+
     constructor() {
-        console.log( 'AppStore constructor' );
+
         super();
+    
+        //listenables
+        this.listenables = Actions;
+
+        //set default app state
         this.state = {
-        	DOM: {},
+        	config: {},
 			routing: {
 				active: false,
 				startCoord: null,
 				endCoord: null
-			},
-			map: {
-				map: null,
-				routesLayer: null,
-				routes: []
 			}
         }
-        //this.listenTo(statusUpdate, this.onStatusUpdate); // listen to the statusUpdate action
+
+        //load webappConfig from backend (contains things like routing REST endpoint, etc.)
+        request.get('/config.json')
+            .set('Accept', 'application/json')
+            .end( (err, res) => {
+                this.setState({
+                    config: Object.assign( {} , this.state.config , res.body )
+                });
+                console.log( 'config loaded from backend:' , this.state.config );
+            });
+
     }
 
-    /* onStatusUpdate(status) {
-        var newFlag = status ? 'ONLINE' : 'OFFLINE';
-        this.setState({flag:newFlag});
-    } */
+    onToggleRouting() {
+
+        if (this.state.routing.active) {
+
+            this.setState({
+                routing: {
+                    active: false,
+                    startCoord: null,
+                    endCoord: null
+                }
+            });
+
+        } else {
+
+            this.setState({
+                routing: {
+                    active: true,
+                    startCoord: null,
+                    endCoord: null
+                }
+            });
+
+        }
+
+    }
 
 }
 

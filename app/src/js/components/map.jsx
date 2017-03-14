@@ -2,7 +2,13 @@ import Reflux from 'reflux';
 import ReactDOM from 'react-dom';
 import React from 'react';
 
+import uuid from 'uuid';
+import request from 'superagent';
+
 import AppStore from '../stores/AppStore.js';
+import Actions from '../actions/actions.js';
+
+import RouteControl from '../components/routeControl.jsx';
 
 //open layers and styles
 var ol = require('openlayers');
@@ -11,9 +17,11 @@ require('openlayers/css/ol.css');
 class Map extends Reflux.Component {
 	
 	constructor(props) {
-		console.log('Map constructor');
 		super(props);
-		this.state = {};
+		this.state = {
+			map: null,
+			routesLayer: null
+		};
 		this.store = AppStore;
 	}
 
@@ -46,10 +54,60 @@ class Map extends Reflux.Component {
 				//projection: 'EPSG:4326',
 				center: this.to3857( [-89.386311071876291, 43.0767353342079] ),
 				zoom: 13
-			})
+			}),
+			controls: ol.control.defaults({ rotate: false }).extend([
+				this.refs.routeControl.control 
+			])
 		});
 
-	}	
+		map.on('click', this.handleMapClick.bind(this));
+
+		this.setState({ 
+			map : map,
+			routesLayer: routesLayer
+		});
+
+	}
+
+	handleMapClick(event) {
+
+		console.log(this.state);
+
+		// ROUTING
+
+		if (this.state.routing.active) {
+
+			var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
+
+			if (!this.state.routing.startCoord) this.state.routing.startCoord = clickedPointWkt;
+			else {
+				
+				this.state.routing.endCoord = clickedPointWkt;
+
+				//derive routing REST endpoint from webappConfig
+				var routingRestEndpointUrl = this.state.config.routingRestEndpoint.protocol + '://' + this.state.config.routingRestEndpoint.host + ':' + this.state.config.routingRestEndpoint.port + '/' + this.state.config.routingRestEndpoint.path + '/';
+
+				request.post( routingRestEndpointUrl )
+					.send( Object.assign( {}, this.state.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() } ) )
+					.set('Accept', 'application/json')
+					.end( (err, res) => {
+						
+						console.log('route returned from backend', res.body);
+
+						var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
+
+						var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
+						this.state.routesLayer.getSource().addFeatures( routeFeatures ); 
+
+					});
+
+				Actions.toggleRouting();
+
+			}
+
+		}
+
+	}
 
 
 	to3857( target ) {
@@ -61,14 +119,22 @@ class Map extends Reflux.Component {
 	}
 
 	render () {
-		console.log('Map render' , this );
+
 		return (
 
-			<div ref="mapContainer" id="mapContainer">
-				
+			<div>
+
+				<div ref="mapContainer" id="mapContainer" className={ (this.state.routing.active) ? 'crosshair' : '' } >
+				</div>
+
+				<RouteControl 
+					ref="routeControl" 
+					routing={this.state.routing} />
+
 			</div>
 
 		);
+		
 	}
 }
 
