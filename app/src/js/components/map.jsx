@@ -101,8 +101,8 @@ class Map extends Reflux.Component {
 					.send( Object.assign( {}, this.state.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() } ) )
 					.set('Accept', 'application/json')
 					.end( (err, res) => {
-						
-						console.log('route returned from backend', res.body);
+			
+						Actions.completeRouting();						
 
 						var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
 
@@ -111,7 +111,7 @@ class Map extends Reflux.Component {
 
 					});
 
-				Actions.toggleRouting();
+				Actions.submitRouting();
 
 			}
 

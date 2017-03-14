@@ -18,7 +18,8 @@ class AppStore extends Reflux.Store {
 			routing: {
 				active: false,
 				startCoord: null,
-				endCoord: null
+				endCoord: null,
+                percentComplete: -1
 			}
         }
 
@@ -42,7 +43,8 @@ class AppStore extends Reflux.Store {
                 routing: {
                     active: false,
                     startCoord: null,
-                    endCoord: null
+                    endCoord: null,
+                    percentComplete: -1
                 }
             });
 
@@ -52,12 +54,35 @@ class AppStore extends Reflux.Store {
                 routing: {
                     active: true,
                     startCoord: null,
-                    endCoord: null
+                    endCoord: null,
+                    percentComplete: -1
                 }
             });
 
         }
 
+    }
+
+    onSubmitRouting() {
+        this.setState({
+            routing: {
+                active: false,
+                startCoord: null,
+                endCoord: null,
+                percentComplete: 10
+            }
+        });
+    }
+
+    onCompleteRouting() {
+        this.setState({
+            routing: {
+                active: false,
+                startCoord: null,
+                endCoord: null,
+                percentComplete: 100
+            }
+        });
     }
 
 }

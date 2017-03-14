@@ -1,7 +1,9 @@
 import Reflux from 'reflux';
 
 var Actions = Reflux.createActions([
-	'toggleRouting'
+	'toggleRouting',
+	'submitRouting',
+	'completeRouting'
 ]);
 
 module.exports = Actions;
