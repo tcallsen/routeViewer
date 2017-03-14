@@ -65,7 +65,6 @@ var sentRoutes = {};
 var sentStartGuids = {};
 var sentEndGuids = {};
 var filePath = path.join( webappConfig.routesInterface.path );
-var watchLock = false; //use watchLock to prevent extra fs.watch events from firing WHILE file is being updated
 
 //check to ensure file exists
 var checkFilePromise = new Promise( (resolve,reject) => {
@@ -82,17 +81,16 @@ var checkFilePromise = new Promise( (resolve,reject) => {
 checkFilePromise.then( () => {
 
 	fs.watch( filePath , {encoding: 'buffer'}, (eventType) => {
-		watchLock = true;
-		setTimeout(() => {
-			//send only new routes forward on file update 
-			//var newRoutes = [];
-			fs.readFile(filePath, {encoding: 'utf-8'}, function(err,fileData){
-			    
-			    //read in updated file
-			    fileData.split(/\r?\n/).forEach( (message,index) => {
-			  
-			    	//skip empty lines/routes
-			    	if (!message.length) return;
+
+		fs.readFile(filePath, {encoding: 'utf-8'}, function(err,fileData){
+		    
+		    //read in updated file
+		    fileData.split(/\r?\n/).forEach( (message,index) => {
+		  
+		    	//skip empty lines/routes
+		    	if (!message.length) return;
+
+		    	try {
 
 			    	var messageObject = JSON.parse(message);
 
@@ -125,18 +123,21 @@ checkFilePromise.then( () => {
 				    	}
 			    	}
 
-			    });
+		    	} catch (err) {
+		    		console.log('error pasring JSON in routes.json', err);
+		    	}
 
-				//send new routes to connected sockets
-				/* if (newRoutes.length) {
-			    	Object.values(io.sockets.connected).forEach( socket => {
-						socket.emit('newRoutes', newRoutes );
-					});
-			    } */
+		    });
 
-			});
-			watchLock = false;
-		}, 500);
+			//send new routes to connected sockets
+			/* if (newRoutes.length) {
+		    	Object.values(io.sockets.connected).forEach( socket => {
+					socket.emit('newRoutes', newRoutes );
+				});
+		    } */
+
+		});
+
 	});
 
 });
