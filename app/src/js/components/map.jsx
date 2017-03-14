@@ -31,7 +31,14 @@ class Map extends Reflux.Component {
 			source: new ol.source.Vector({
 				features:[],
 				wrapX: false
-			}),
+			})
+		});
+
+		var snapToLayer = new ol.layer.Vector({
+			source: new ol.source.Vector({
+				features:[],
+				wrapX: false
+			})
 		});
 
 		var map = new ol.Map({
@@ -48,7 +55,10 @@ class Map extends Reflux.Component {
 			        })
 			    }),
 			    
-			    routesLayer
+			    routesLayer,
+
+			    snapToLayer
+
 			],
 			view: new ol.View({
 				//projection: 'EPSG:4326',
@@ -61,17 +71,17 @@ class Map extends Reflux.Component {
 		});
 
 		map.on('click', this.handleMapClick.bind(this));
+		map.on('pointermove', this.handleMapPointerMove.bind(this));
 
 		this.setState({ 
 			map : map,
-			routesLayer: routesLayer
+			routesLayer: routesLayer,
+			snapToLayer: snapToLayer
 		});
 
 	}
 
 	handleMapClick(event) {
-
-		console.log(this.state);
 
 		// ROUTING
 
@@ -109,6 +119,44 @@ class Map extends Reflux.Component {
 
 	}
 
+	handleMapPointerMove(event) {
+
+		// ROUTING
+
+		if (this.state.routing.active) {
+
+			if (!this.state.routing.startCoord && !this.handleMapPointerMove.requestOut) {
+
+				this.handleMapPointerMove.requestOut = true;
+
+				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
+
+				//derive routing REST endpoint from webappConfig
+				//var routingRestEndpointUrl = this.state.config.routingRestEndpoint.protocol + '://' + this.state.config.routingRestEndpoint.host + ':' + this.state.config.routingRestEndpoint.port + '/' + this.state.config.routingRestEndpoint.path + '/';
+				var routingRestEndpointUrl = 'http://localhost:8080/graphWebApiSpring/getClosestPoint/';
+
+				request.post( routingRestEndpointUrl )
+					.send({
+						startCoord: hoveredPointWkt
+					})
+					.set('Accept', 'application/json')
+					.end( (err, res) => {
+
+						var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
+
+						var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
+						this.state.snapToLayer.getSource().clear();
+						this.state.snapToLayer.getSource().addFeatures( routeFeatures ); 
+
+						this.handleMapPointerMove.requestOut = false;
+
+					});
+
+			} 
+
+		}
+
+	}
 
 	to3857( target ) {
 		return ol.proj.transform( target , 'EPSG:4326','EPSG:3857')
