@@ -1,9 +1,6 @@
 import Reflux from 'reflux';
 import request from 'superagent';
 
-import io from 'socket.io-client';
-import ol from 'openlayers';
-
 import Actions from '../actions/actions.js';
 
 class AppStore extends Reflux.Store {
@@ -14,24 +11,6 @@ class AppStore extends Reflux.Store {
     
         //listenables
         this.listenables = Actions;
-
-        // web socket to routes.json
-        var socket = io();
-        socket.on('connect', function(){
-            console.log('socket connceted');
-        });
-
-        socket.on('newRoute', (route) => {
-
-            var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
-
-            var routeFeatures = geoJsonParser.readFeatures( route , { featureProjection: 'EPSG:3857' } );
-
-            console.log('newRoute received; length: ', routeFeatures[0].get('routeSequence') );
-
-            this.state.map.routesLayer.getSource().addFeatures( routeFeatures ); 
-
-        });
 
         //load webappConfig from backend (contains things like routing REST endpoint, etc.)
         request.get('/config.json')
@@ -52,8 +31,7 @@ class AppStore extends Reflux.Store {
                 endCoord: null,
                 percentComplete: -1
             },
-            map: null,
-            socket: socket
+            map: null
         };
 
     }

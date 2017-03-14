@@ -6,6 +6,7 @@ import uuid from 'uuid';
 import request from 'superagent';
 
 import AppStore from '../stores/AppStore.js';
+import RouteStore from '../stores/RouteStore.js';
 import Actions from '../actions/actions.js';
 
 import RouteControl from '../components/routeControl.jsx';
@@ -23,7 +24,13 @@ class Map extends Reflux.Component {
 			map: null,
 			routesLayer: null
 		};
+		
+		//register AppState store
 		this.store = AppStore;
+		
+		//register RouteStore updates
+		this.mapStoreToState( RouteStore, this.handleRouteStoreUpdate.bind(this) );
+
 	}
 
 	componentDidMount() {
@@ -80,6 +87,16 @@ class Map extends Reflux.Component {
 			routesLayer: routesLayer,
 			snapToLayer: snapToLayer
 		});
+
+	}
+
+	handleRouteStoreUpdate(args) {
+		
+		if (args.type === 'newRoute') {
+
+			this.state.map.routesLayer.getSource().addFeatures( args.features );
+
+		}
 
 	}
 
