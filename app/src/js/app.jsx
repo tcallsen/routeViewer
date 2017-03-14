@@ -34,7 +34,7 @@ class App extends Reflux.Component {
 		return (
 
 			<div>
-				<ProgressBar percent={this.state.routing.percentComplete} autoIncrement={true} spinner='right' />
+				<ProgressBar percent={this.state.routing.percentComplete} autoIncrement={true} spinner='right' intervalTime={30} />
 				<Map />
 			</div>
 

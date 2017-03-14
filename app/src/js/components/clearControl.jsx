@@ -7,7 +7,7 @@ import ol from 'openlayers';
 //import AppStore from '../stores/AppStore.js';
 import Actions from '../actions/actions.js';
 
-class RouteControl extends Reflux.Component {
+class ClearControl extends Reflux.Component {
 	
 	constructor(props) {
 		super(props);
@@ -17,7 +17,7 @@ class RouteControl extends Reflux.Component {
 		//routing values available in this.props.routing
 
 		// This binding is necessary to make `this` work in the callback
-    	this.toggleRouting = this.toggleRouting.bind(this);
+    	this.clearRoutes = this.clearRoutes.bind(this);
 
 	}
 
@@ -27,21 +27,21 @@ class RouteControl extends Reflux.Component {
 		    element: ReactDOM.findDOMNode(this)
 		});
 
-		document.getElementById('routeControl').addEventListener("click", this.toggleRouting.bind(this));
+		document.getElementById('clearControl').addEventListener("click", this.clearRoutes.bind(this));
 
 	}	
 
-	toggleRouting() {
-		Actions.toggleRouting();
+	clearRoutes() {
+		Actions.clearRoutes();
 	}
 
 	render () {
 		return (
-			<div id="routeControl" className="ol-unselectable ol-control custom-control">
-				<button><img src='/static/img/ic_directions_walk_black_24dp_2x.png'/></button>
+			<div id="clearControl" className="ol-unselectable ol-control custom-control">
+				<button><img src='/static/img/ic_blur_off_white_24dp_2x.png'/></button>
 			</div>
 		);
 	}
 }
 
-module.exports = RouteControl;
+module.exports = ClearControl;

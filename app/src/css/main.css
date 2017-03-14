@@ -19,7 +19,13 @@ div#mapContainer div#routeControl {
     position: absolute;
 }
 
-div#mapContainer div#routeControl img {
+div#mapContainer div#clearControl {
+	left: 2.7em;
+    bottom: .5em;
+    position: absolute;
+}
+
+div#mapContainer div.custom-control img {
 	width: 20px;
     padding-top: 1px;
 }

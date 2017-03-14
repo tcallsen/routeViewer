@@ -9,6 +9,7 @@ import AppStore from '../stores/AppStore.js';
 import Actions from '../actions/actions.js';
 
 import RouteControl from '../components/routeControl.jsx';
+import ClearControl from '../components/clearControl.jsx';
 
 //open layers and styles
 var ol = require('openlayers');
@@ -66,15 +67,16 @@ class Map extends Reflux.Component {
 				zoom: 13
 			}),
 			controls: ol.control.defaults({ rotate: false }).extend([
-				this.refs.routeControl.control 
+				this.refs.routeControl.control,
+				this.refs.clearControl.control
 			])
 		});
 
 		map.on('click', this.handleMapClick.bind(this));
 		map.on('pointermove', this.handleMapPointerMove.bind(this));
 
-		this.setState({ 
-			map : map,
+		Actions.setMapState({ 
+			map: map,
 			routesLayer: routesLayer,
 			snapToLayer: snapToLayer
 		});
@@ -87,7 +89,7 @@ class Map extends Reflux.Component {
 
 		if (this.state.routing.active) {
 
-			var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
+			var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.map.getCoordinateFromPixel(event.pixel)) ) );
 
 			if (!this.state.routing.startCoord) this.state.routing.startCoord = clickedPointWkt;
 			else {
@@ -102,12 +104,14 @@ class Map extends Reflux.Component {
 					.set('Accept', 'application/json')
 					.end( (err, res) => {
 			
-						Actions.completeRouting();						
+						//complete routing sequence
+						Actions.completeRouting();
+						this.state.map.snapToLayer.getSource().clear();				
 
 						var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
 
 						var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
-						this.state.routesLayer.getSource().addFeatures( routeFeatures ); 
+						this.state.map.routesLayer.getSource().addFeatures( routeFeatures ); 
 
 					});
 
@@ -129,7 +133,7 @@ class Map extends Reflux.Component {
 
 				this.handleMapPointerMove.requestOut = true;
 
-				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
+				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.map.getCoordinateFromPixel(event.pixel)) ) );
 
 				//derive routing REST endpoint from webappConfig
 				var routingRestEndpointUrl = this.state.config.routingRestEndpoint.protocol + '://' + this.state.config.routingRestEndpoint.host + ':' + this.state.config.routingRestEndpoint.port + '/' + this.state.config.routingRestEndpoint.path + '/getClosestPoint/';
@@ -146,8 +150,8 @@ class Map extends Reflux.Component {
 						var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
 
 						var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
-						this.state.snapToLayer.getSource().clear();
-						this.state.snapToLayer.getSource().addFeatures( routeFeatures ); 
+						this.state.map.snapToLayer.getSource().clear();
+						this.state.map.snapToLayer.getSource().addFeatures( routeFeatures ); 
 
 					});
 
@@ -155,7 +159,7 @@ class Map extends Reflux.Component {
 
 				this.handleMapPointerMove.requestOut = true;
 
-				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
+				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.map.getCoordinateFromPixel(event.pixel)) ) );
 
 				//derive routing REST endpoint from webappConfig
 				var routingRestEndpointUrl = this.state.config.routingRestEndpoint.protocol + '://' + this.state.config.routingRestEndpoint.host + ':' + this.state.config.routingRestEndpoint.port + '/' + this.state.config.routingRestEndpoint.path + '/getRoute/';
@@ -170,8 +174,8 @@ class Map extends Reflux.Component {
 						var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
 
 						var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
-						this.state.snapToLayer.getSource().clear();
-						this.state.snapToLayer.getSource().addFeatures( routeFeatures ); 
+						this.state.map.snapToLayer.getSource().clear();
+						this.state.map.snapToLayer.getSource().addFeatures( routeFeatures ); 
 
 					});
 
@@ -201,6 +205,9 @@ class Map extends Reflux.Component {
 				<RouteControl 
 					ref="routeControl" 
 					routing={this.state.routing} />
+
+				<ClearControl 
+					ref="clearControl" />
 
 			</div>
 
