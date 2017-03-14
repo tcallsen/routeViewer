@@ -141,29 +141,31 @@ class Map extends Reflux.Component {
 					.set('Accept', 'application/json')
 					.end( (err, res) => {
 
+						this.handleMapPointerMove.requestOut = false;
+
 						var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
 
 						var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
 						this.state.snapToLayer.getSource().clear();
 						this.state.snapToLayer.getSource().addFeatures( routeFeatures ); 
 
-						this.handleMapPointerMove.requestOut = false;
-
 					});
 
-			} /* else if (!this.handleMapPointerMove.requestOut) {
+			} else if (!this.handleMapPointerMove.requestOut) {
 
 				this.handleMapPointerMove.requestOut = true;
 
 				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
 
 				//derive routing REST endpoint from webappConfig
-				var routingRestEndpointUrl = this.state.config.routingRestEndpoint.protocol + '://' + this.state.config.routingRestEndpoint.host + ':' + this.state.config.routingRestEndpoint.port + '/' + this.state.config.routingRestEndpoint.path + '/getRoutes/';
+				var routingRestEndpointUrl = this.state.config.routingRestEndpoint.protocol + '://' + this.state.config.routingRestEndpoint.host + ':' + this.state.config.routingRestEndpoint.port + '/' + this.state.config.routingRestEndpoint.path + '/getRoute/';
 
 				request.post( routingRestEndpointUrl )
 					.send( Object.assign( {}, this.state.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() , endCoord: hoveredPointWkt } ) )
 					.set('Accept', 'application/json')
 					.end( (err, res) => {
+
+						this.handleMapPointerMove.requestOut = false;
 
 						var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
 
@@ -171,11 +173,9 @@ class Map extends Reflux.Component {
 						this.state.snapToLayer.getSource().clear();
 						this.state.snapToLayer.getSource().addFeatures( routeFeatures ); 
 
-						this.handleMapPointerMove.requestOut = false;
-
 					});
 
-			} */
+			}
 
 		}
 
