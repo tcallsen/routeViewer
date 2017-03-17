@@ -125,10 +125,6 @@ class Map extends Reflux.Component {
 						Actions.completeRouting();
 						this.state.map.snapToLayer.getSource().clear();				
 
-						/* var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
-						var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
-						this.state.map.routesLayer.getSource().addFeatures( routeFeatures ); */
-
 					});
 
 				Actions.submitRouting();
