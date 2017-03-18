@@ -70,6 +70,8 @@ class AppStore extends Reflux.Store {
                 }
             });
 
+            this.state.map.context.clearRoutesLayer();
+
         }
 
     }

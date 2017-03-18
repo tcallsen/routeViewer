@@ -1,6 +1,8 @@
 html, body, div#app {
+    font-family: 'Roboto', sans-serif;
     height: 100%;
     margin: 0;
+    color: rgb(101,101,101);
 }
 
 div#mapContainer {
@@ -17,6 +19,7 @@ div#mapContainer div#routeControl {
 	left: .5em;
     bottom: .5em;
     position: absolute;
+    z-index: 100;
 }
 
 div#mapContainer div#clearControl {
@@ -33,4 +36,35 @@ div#mapContainer div.custom-control img {
 div#mapContainer button:hover,
 div#mapContainer div.ol-control:hover {
 	cursor:pointer;
+}
+
+div#mapContainer div#routesListControl {
+  	transition: height .25s;
+	bottom: 0px;
+    left: 0px;
+    height: 0;
+    background-color: rgba(255,255,255,0.7);
+    z-index: 75;
+    width: 300px;
+    border-top-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+
+div#mapContainer div#routesListControl.active {
+	height: calc( 100% - 78px );
+}
+
+div#mapContainer div#routesListControl:hover {
+	background-color: rgba(255,255,255,0.75);
+	cursor: inherit;
+}
+
+div#mapContainer div#routesListControl h5 {
+    font-size: 14px;
+    padding: 0 0 4px;
+    margin: 6px;
+    text-align: center;
+    font-weight: normal;
+    border-bottom: 1px solid rgb(101,101,101);
 }

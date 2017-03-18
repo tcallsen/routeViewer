@@ -10,7 +10,8 @@ import RouteStore from '../stores/RouteStore.js';
 import Actions from '../actions/actions.js';
 
 import RouteControl from '../components/routeControl.jsx';
-import ClearControl from '../components/clearControl.jsx';
+//import ClearControl from '../components/clearControl.jsx';
+import RoutesListControl from '../components/routesListControl.jsx';
 
 //open layers and styles
 var ol = require('openlayers');
@@ -77,7 +78,8 @@ class Map extends Reflux.Component {
 			}),
 			controls: ol.control.defaults({ rotate: false }).extend([
 				this.refs.routeControl.control,
-				this.refs.clearControl.control
+				//this.refs.clearControl.control,
+				this.refs.routesListControl.control
 			])
 		});
 
@@ -231,6 +233,9 @@ class Map extends Reflux.Component {
 
 	render () {
 
+		//				<ClearControl 
+		//			ref="clearControl" />
+
 		return (
 
 			<div>
@@ -241,9 +246,9 @@ class Map extends Reflux.Component {
 				<RouteControl 
 					ref="routeControl" 
 					routing={this.state.routing} />
-
-				<ClearControl 
-					ref="clearControl" />
+					
+				<RoutesListControl 
+					ref="routesListControl" />
 
 			</div>
 
