@@ -21,21 +21,9 @@ class RouteStore extends Reflux.Store {
             console.log('socket connceted');
         });
 
-        socket.on('newRoute', (route) => {
-
-            var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
-
-            var routeFeatures = geoJsonParser.readFeatures( route , { featureProjection: 'EPSG:3857' } );
-
-            console.log('recieved routeSequence: ', routeFeatures[0].get('routeSequence') );
-
-            // trigger recieved route down to components
-            this.trigger({
-                type: 'newRoute',
-                features: routeFeatures
-            });
-
-        });
+        socket.on( 'routestart' , this.processRouteStart.bind(this) );
+        socket.on( 'routeend' , this.processRouteEnd.bind(this) );
+        socket.on( 'newRoute' , this.processNewRoute.bind(this) );
 
         //set default app state
         this.state = {
@@ -44,6 +32,58 @@ class RouteStore extends Reflux.Store {
         };
 
     }
+
+    processRouteStart(requestGuid) {
+
+        console.log( 'RouteStore processRouteStart' );
+
+        this.state.routes = [];
+
+        // trigger recieved route down to components
+        this.trigger({
+            type: 'routeStart',
+            requestGuid: requestGuid
+        });
+        
+    }
+
+    processRouteEnd(requestGuid) {
+
+        console.log( 'RouteStore processRouteEnd' );
+
+        // trigger recieved route down to components
+        this.trigger({
+            type: 'routeEnd',
+            requestGuid: requestGuid,
+            routes: this.state.routes
+        });
+
+    }
+
+    processNewRoute(route) {
+
+        //parse route into OpenLayers feature
+        var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
+        var routeFeatures = geoJsonParser.readFeatures( route , { featureProjection: 'EPSG:3857' } );
+
+        var routeSequence = routeFeatures[0].get('routeSequence');
+
+        //save route into local state
+        this.state.routes[routeSequence] = {
+            features: routeFeatures,
+            json: route
+        };
+
+        // trigger recieved route down to components
+        this.trigger({
+            type: 'newRoute',
+            routeSequence: routeSequence,
+            features: routeFeatures
+        });
+
+    }
+
+
 
 }
 

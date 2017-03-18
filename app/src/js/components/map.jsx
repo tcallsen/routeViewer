@@ -31,6 +31,8 @@ class Map extends Reflux.Component {
 		//register RouteStore updates
 		this.mapStoreToState( RouteStore, this.handleRouteStoreUpdate.bind(this) );
 
+		this.clearRoutesLayer = this.clearRoutesLayer.bind(this);
+
 	}
 
 	componentDidMount() {
@@ -85,8 +87,24 @@ class Map extends Reflux.Component {
 		Actions.setMapState({ 
 			map: map,
 			routesLayer: routesLayer,
-			snapToLayer: snapToLayer
+			snapToLayer: snapToLayer,
+			context: this
 		});
+
+	}
+
+	clearRoutesLayer() {
+
+		this.state.map.map.removeLayer( this.state.map.routesLayer );
+
+		this.state.map.routesLayer = new ol.layer.Vector({
+			source: new ol.source.Vector({
+				features:[],
+				wrapX: false
+			})
+		});
+
+		this.state.map.map.addLayer( this.state.map.routesLayer );
 
 	}
 
@@ -94,7 +112,13 @@ class Map extends Reflux.Component {
 		
 		if (args.type === 'newRoute') {
 
+			//console.log('adding routeSequence ' + args.routeSequence + " to map");
+
 			this.state.map.routesLayer.getSource().addFeatures( args.features );
+
+		} else if (args.type === 'routeStart') {
+
+			this.clearRoutesLayer()
 
 		}
 
