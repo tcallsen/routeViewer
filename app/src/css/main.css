@@ -45,7 +45,7 @@ div#mapContainer div#routesListControl {
     height: 0;
     background-color: rgba(255,255,255,0.7);
     z-index: 75;
-    width: 300px;
+    width: 160px;
     border-top-left-radius: 0px;
     border-bottom-right-radius: 0px;
     border-bottom-left-radius: 0px;
@@ -88,9 +88,11 @@ div#mapContainer div#routesListControl ul#routesList li.routesListItem {
 div#mapContainer div#routesListControl ul#routesList li.routesListItem p {
     margin: 0;
     padding: 0;
+    display: inline-block;
 }
 
 div#mapContainer div#routesListControl ul#routesList li.routesListItem p:hover {
     font-weight: bold;
     cursor: pointer;
+    letter-spacing: 1px;
 }
