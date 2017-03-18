@@ -69,10 +69,12 @@ class RouteStore extends Reflux.Store {
         var routeSequence = routeFeatures[0].get('routeSequence');
 
         //save route into local state
-        this.state.routes[routeSequence] = {
-            features: routeFeatures,
-            json: route
-        };
+        if (typeof routeSequence !== 'undefined') {
+            this.state.routes[routeSequence] = {
+                features: routeFeatures,
+                json: route
+            };
+        } else console.log( 'omitting spindles from routesStore' );
 
         // trigger recieved route down to components
         this.trigger({
