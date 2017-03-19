@@ -66,7 +66,7 @@ class RoutesListControl extends Reflux.Component {
 		});
 
 		return (
-			<ul id="routesList" onMouseOut= { () => this.handleRouteHover() }>
+			<ul id="routesList" onMouseLeave= { () => this.handleRouteHover(undefined, event) }>
 				{routeListElements}
 			</ul>
 		);
@@ -74,8 +74,6 @@ class RoutesListControl extends Reflux.Component {
 	}
 
 	handleRouteHover(routeSequence) {
-
-		if (typeof routeSequence !== 'undefined') console.log('clearing highlighted routes');
 
 		var highlightedRouteSequences = (typeof routeSequence !== 'undefined') ? [routeSequence] : [];
 
