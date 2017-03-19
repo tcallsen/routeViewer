@@ -80,8 +80,6 @@ class RoutesListControl extends Reflux.Component {
 	}
 
 	render () {
-		
-		//console.log( 'RoutesListControl render' , this.state.routing.percentComplete );
 
 		var displayPanel = this.state.routing.percentComplete === 100;
 

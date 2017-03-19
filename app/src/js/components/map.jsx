@@ -88,8 +88,8 @@ class Map extends Reflux.Component {
 			],
 			view: new ol.View({
 				//projection: 'EPSG:4326',
-				center: this.to3857( [-89.386311071876291, 43.0767353342079] ),
-				zoom: 13
+				center: [-9947818.324464286, 5324462.825544785], //this.to3857( [-89.386311071876291, 43.0767353342079] ),
+				zoom: 15, //13
 			}),
 			controls: ol.control.defaults({ rotate: false }).extend([
 				this.refs.routeControl.control,
