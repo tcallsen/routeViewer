@@ -44,8 +44,6 @@ class RoutesListControl extends Reflux.Component {
 
 		if (args.type === 'routeEnd') {
 
-			console.log( 'RoutesListControl recieved update with ' + args.routes.length + 'new routes' );
-
 			this.setState({
 				routes: args.routes
 			});

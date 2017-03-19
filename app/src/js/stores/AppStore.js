@@ -44,6 +44,14 @@ class AppStore extends Reflux.Store {
 
     onClearRoutes(args) {
         this.state.map.context.clearRoutesLayer();
+        this.setState({
+            routing: {
+                active: false,
+                startCoord: null,
+                endCoord: null,
+                percentComplete: -1
+            }
+        });
     }
 
     onToggleRouting() {

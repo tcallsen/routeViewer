@@ -26,6 +26,7 @@ div#mapContainer div#clearControl {
 	left: 2.7em;
     bottom: .5em;
     position: absolute;
+    z-index: 100;
 }
 
 div#mapContainer div.custom-control img {
