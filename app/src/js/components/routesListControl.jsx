@@ -58,14 +58,28 @@ class RoutesListControl extends Reflux.Component {
 
 		var routeListElements = Object.keys(this.state.routes).map( (routeSequence) => {
 			var route = this.state.routes[routeSequence];
-		 	return <li className="routesListItem"><p>Route {routeSequence}</p></li>;
+		 	return (
+		 		<li className="routesListItem" key={'routesListItem-'+routeSequence}>
+		 			<p onMouseOver={ () => this.handleRouteHover(routeSequence) }>Route {routeSequence}</p>
+	 			</li>
+ 			);
 		});
 
 		return (
-			<ul id="routesList">
+			<ul id="routesList" onMouseOut= { () => this.handleRouteHover() }>
 				{routeListElements}
 			</ul>
 		);
+
+	}
+
+	handleRouteHover(routeSequence) {
+
+		if (typeof routeSequence !== 'undefined') console.log('clearing highlighted routes');
+
+		var highlightedRouteSequences = (typeof routeSequence !== 'undefined') ? [routeSequence] : [];
+
+		Actions.highlightRoutes( highlightedRouteSequences );
 
 	}
 

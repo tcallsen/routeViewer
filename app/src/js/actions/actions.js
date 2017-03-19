@@ -7,7 +7,9 @@ var Actions = Reflux.createActions([
 	'completeRouting',
 
 	'setMapState',
-	'clearRoutes'
+	'clearRoutes',
+
+	'highlightRoutes'
 
 ]);
 

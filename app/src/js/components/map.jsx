@@ -33,12 +33,23 @@ class Map extends Reflux.Component {
 		this.mapStoreToState( RouteStore, this.handleRouteStoreUpdate.bind(this) );
 
 		this.clearRoutesLayer = this.clearRoutesLayer.bind(this);
+		this.getFeatureStyle = this.getFeatureStyle.bind(this);
+		this.getHighlightedFeatureStyle = this.getHighlightedFeatureStyle.bind(this);
 
 	}
 
 	componentDidMount() {
 
 		var routesLayer = new ol.layer.Vector({
+			//style: this.getFeatureStyle,
+			source: new ol.source.Vector({
+				features:[],
+				wrapX: false
+			})
+		});
+
+		var highlightedRoutesLayer = new ol.layer.Vector({
+			style: this.getFeatureStyle,
 			source: new ol.source.Vector({
 				features:[],
 				wrapX: false
@@ -68,6 +79,8 @@ class Map extends Reflux.Component {
 			    
 			    routesLayer,
 
+			    highlightedRoutesLayer,
+
 			    snapToLayer
 
 			],
@@ -89,24 +102,116 @@ class Map extends Reflux.Component {
 		Actions.setMapState({ 
 			map: map,
 			routesLayer: routesLayer,
+			highlightedRoutesLayer: highlightedRoutesLayer,
 			snapToLayer: snapToLayer,
 			context: this
 		});
 
 	}
 
-	clearRoutesLayer() {
+	clearRoutesLayer(args) {
 
-		this.state.map.map.removeLayer( this.state.map.routesLayer );
+		// base routes
 
-		this.state.map.routesLayer = new ol.layer.Vector({
-			source: new ol.source.Vector({
-				features:[],
-				wrapX: false
-			})
+		if (!args || (args && args.indexOf(0) > -1) ) {
+
+			this.state.map.map.removeLayer( this.state.map.routesLayer );
+
+			this.state.map.routesLayer = new ol.layer.Vector({
+				//style: this.getFeatureStyle,
+				source: new ol.source.Vector({
+					features:[],
+					wrapX: false
+				})
+			});
+
+			this.state.map.map.addLayer( this.state.map.routesLayer );
+
+		}
+
+		// highlighted routes
+
+		if (!args || (args && args.indexOf(1) > -1) ) {
+
+			this.state.map.map.removeLayer( this.state.map.highlightedRoutesLayer );
+
+			this.state.map.highlightedRoutesLayer = new ol.layer.Vector({
+				style: this.getHighlightedFeatureStyle,
+				source: new ol.source.Vector({
+					features:[],
+					wrapX: false
+				})
+			});
+
+			this.state.map.map.addLayer( this.state.map.highlightedRoutesLayer );
+
+		}
+
+	}
+
+	getFeatureStyle(feature, resolution) {
+
+		//console.log('getting base style for ' + feature.get('routeSequence'));
+
+		//starting with default style
+		var fill = new ol.style.Fill({
+			color: 'rgba(255,255,255,0.4)'
 		});
+		var stroke = new ol.style.Stroke({
+			color: '#3399CC',
+			width: 1.25
+		});
+		var styles = [
+			new ol.style.Style({
+				image: new ol.style.Circle({
+					fill: fill,
+					stroke: stroke,
+					radius: 5
+				}),
+				fill: fill,
+				stroke: stroke
+			})
+		];
 
-		this.state.map.map.addLayer( this.state.map.routesLayer );
+		return styles;
+
+	}
+
+	getHighlightedFeatureStyle(feature, resolution) {
+
+		var baseStyle = this.getFeatureStyle(feature, resolution);
+
+		if (feature.getGeometry().getType() === 'LineString') {
+			
+			baseStyle[0].setStroke(  
+
+				new ol.style.Stroke({
+					color: 'red',
+					width: 2.5
+				})
+
+			);
+
+		} else if (feature.getGeometry().getType() === 'Point') {
+
+			baseStyle[0].setImage(  
+
+				new ol.style.Circle({
+					fill: new ol.style.Fill({
+						color: 'rgba(255,0,0,0.4)'
+					}),
+					stroke: new ol.style.Stroke({
+						color: '#3399CC',
+						width: 1.25
+					}),
+					radius: 5
+				})
+
+			);
+
+		} 
+
+		return baseStyle;
 
 	}
 
@@ -114,13 +219,26 @@ class Map extends Reflux.Component {
 		
 		if (args.type === 'newRoute') {
 
-			//console.log('adding routeSequence ' + args.routeSequence + " to map");
-
 			this.state.map.routesLayer.getSource().addFeatures( args.features );
 
 		} else if (args.type === 'routeStart') {
 
 			this.clearRoutesLayer()
+
+		} else if (args.type === 'highlightedRoutes') {
+
+			//clear only highlightedRoutesLayer
+			this.clearRoutesLayer([1]);
+
+			//loop through supplied features and add highlight flag
+			Object.values(args.routes).forEach( route => {
+				this.state.map.highlightedRoutesLayer.getSource().addFeatures( route.features );
+			});
+
+			//if highlight features are present, dim base features layer
+			if ( this.state.map.highlightedRoutesLayer.getSource().getFeatures().length > 0 ) {
+				this.state.map.routesLayer.setOpacity( .035 );
+			} else this.state.map.routesLayer.setOpacity( 1 );
 
 		}
 

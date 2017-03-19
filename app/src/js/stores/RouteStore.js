@@ -28,7 +28,8 @@ class RouteStore extends Reflux.Store {
         //set default app state
         this.state = {
             socket: socket,
-            routes: {}
+            routes: {},
+            highlightedRoutes: {}
         };
 
     }
@@ -85,7 +86,22 @@ class RouteStore extends Reflux.Store {
 
     }
 
+    onHighlightRoutes(highlightedRouteSequences) {
 
+        this.setState.highlightedRoutes = highlightedRoutes;
+        
+        var highlightedRoutes = {};
+        highlightedRouteSequences.forEach( highlightedRouteSequence => {
+            highlightedRoutes[highlightedRouteSequences] = this.state.routes[highlightedRouteSequences]
+        });
+
+        // trigger recieved route down to components
+        this.trigger({
+            type: 'highlightedRoutes',
+            routes: highlightedRoutes
+        });
+
+    }
 
 }
 
