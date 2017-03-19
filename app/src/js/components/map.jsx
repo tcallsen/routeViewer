@@ -10,6 +10,7 @@ import RouteStore from '../stores/RouteStore.js';
 import Actions from '../actions/actions.js';
 
 import RouteControl from '../components/routeControl.jsx';
+import RerunControl from '../components/rerunControl.jsx';
 import ClearControl from '../components/clearControl.jsx';
 import RoutesListControl from '../components/routesListControl.jsx';
 
@@ -34,6 +35,7 @@ class Map extends Reflux.Component {
 
 		this.clearRoutesLayer = this.clearRoutesLayer.bind(this);
 		this.getFeatureStyle = this.getFeatureStyle.bind(this);
+		this.executeRoutingRequest = this.executeRoutingRequest.bind(this);
 		this.getHighlightedFeatureStyle = this.getHighlightedFeatureStyle.bind(this);
 
 	}
@@ -91,6 +93,7 @@ class Map extends Reflux.Component {
 			}),
 			controls: ol.control.defaults({ rotate: false }).extend([
 				this.refs.routeControl.control,
+				this.refs.rerunControl.control,
 				this.refs.clearControl.control,
 				this.refs.routesListControl.control
 			])
@@ -244,6 +247,26 @@ class Map extends Reflux.Component {
 
 	}
 
+	executeRoutingRequest(routingRequestBody) {
+
+		//derive routing REST endpoint from webappConfig
+		var routingRestEndpointUrl = this.state.config.routingRestEndpoint.protocol + '://' + this.state.config.routingRestEndpoint.host + ':' + this.state.config.routingRestEndpoint.port + '/' + this.state.config.routingRestEndpoint.path + '/getRoutes/';
+
+		request.post( routingRestEndpointUrl )
+			.send( routingRequestBody )
+			.set('Accept', 'application/json')
+			.end( (err, res) => {
+	
+				//complete routing sequence
+				Actions.completeRouting();
+				this.state.map.snapToLayer.getSource().clear();				
+
+			});
+
+		Actions.submitRouting( routingRequestBody );
+
+	}
+
 	handleMapClick(event) {
 
 		// ROUTING
@@ -257,21 +280,9 @@ class Map extends Reflux.Component {
 				
 				this.state.routing.endCoord = clickedPointWkt;
 
-				//derive routing REST endpoint from webappConfig
-				var routingRestEndpointUrl = this.state.config.routingRestEndpoint.protocol + '://' + this.state.config.routingRestEndpoint.host + ':' + this.state.config.routingRestEndpoint.port + '/' + this.state.config.routingRestEndpoint.path + '/getRoutes/';
+				var routingRequestBody = Object.assign( {}, this.state.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() } );
 
-				request.post( routingRestEndpointUrl )
-					.send( Object.assign( {}, this.state.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() } ) )
-					.set('Accept', 'application/json')
-					.end( (err, res) => {
-			
-						//complete routing sequence
-						Actions.completeRouting();
-						this.state.map.snapToLayer.getSource().clear();				
-
-					});
-
-				Actions.submitRouting();
+				this.executeRoutingRequest( routingRequestBody );
 
 			}
 
@@ -366,6 +377,9 @@ class Map extends Reflux.Component {
 					
 				<RoutesListControl 
 					ref="routesListControl" />
+
+				<RerunControl
+					ref="rerunControl" />
 
 				<ClearControl 
 					ref="clearControl" />

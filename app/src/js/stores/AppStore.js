@@ -31,6 +31,7 @@ class AppStore extends Reflux.Store {
                 endCoord: null,
                 percentComplete: -1
             },
+            previousRoutingRequest: null,
             map: null
         };
 
@@ -84,14 +85,15 @@ class AppStore extends Reflux.Store {
 
     }
 
-    onSubmitRouting() {
+    onSubmitRouting(routingRequest) {
         this.setState({
             routing: {
                 active: false,
                 startCoord: null,
                 endCoord: null,
                 percentComplete: 10
-            }
+            },
+            previousRoutingRequest: routingRequest
         });
     }
 
@@ -104,6 +106,10 @@ class AppStore extends Reflux.Store {
                 percentComplete: 100
             }
         });
+    }
+
+    onRerunPreviousRoutingRequest() {
+        this.state.map.context.executeRoutingRequest( this.state.previousRoutingRequest );
     }
 
 }

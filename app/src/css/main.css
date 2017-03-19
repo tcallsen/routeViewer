@@ -22,8 +22,15 @@ div#mapContainer div#routeControl {
     z-index: 100;
 }
 
+div#mapContainer div#rerunControl {
+    left: 2.7em;
+    bottom: .5em;
+    position: absolute;
+    z-index: 100;
+}
+
 div#mapContainer div#clearControl {
-	left: 2.7em;
+	left: 4.95em;
     bottom: .5em;
     position: absolute;
     z-index: 100;

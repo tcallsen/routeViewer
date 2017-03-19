@@ -7,7 +7,7 @@ import ol from 'openlayers';
 import AppStore from '../stores/AppStore.js';
 import Actions from '../actions/actions.js';
 
-class ClearControl extends Reflux.Component {
+class RerunControl extends Reflux.Component {
 	
 	constructor(props) {
 		super(props);
@@ -15,11 +15,6 @@ class ClearControl extends Reflux.Component {
 		this.state = {};
 
 		this.store = AppStore;
-
-		//routing values available in this.props.routing
-
-		// This binding is necessary to make `this` work in the callback
-    	this.clearRoutes = this.clearRoutes.bind(this);
 
 	}
 
@@ -29,12 +24,12 @@ class ClearControl extends Reflux.Component {
 		    element: ReactDOM.findDOMNode(this)
 		});
 
-		document.getElementById('clearControl').addEventListener("click", this.clearRoutes.bind(this));
+		document.getElementById('rerunControl').addEventListener("click", this.rerunRouting.bind(this));
 
 	}	
 
-	clearRoutes() {
-		Actions.clearRoutes();
+	rerunRouting() {
+		Actions.rerunPreviousRoutingRequest();
 	}
 
 	render () {
@@ -44,11 +39,11 @@ class ClearControl extends Reflux.Component {
 		};
 
 		return (
-			<div id="clearControl" style={style} className="ol-unselectable ol-control custom-control">
-				<button><img src='/static/img/ic_close_white_24dp_2x.png'/></button>
+			<div id="rerunControl" style={style} className="ol-unselectable ol-control custom-control">
+				<button><img src='/static/img/ic_autorenew_white_24dp_2x.png'/></button>
 			</div>
 		);
 	}
 }
 
-module.exports = ClearControl;
+module.exports = RerunControl;

@@ -36,8 +36,6 @@ class RouteStore extends Reflux.Store {
 
     processRouteStart(requestGuid) {
 
-        console.log( 'RouteStore processRouteStart' );
-
         this.state.routes = [];
 
         // trigger recieved route down to components
@@ -49,8 +47,6 @@ class RouteStore extends Reflux.Store {
     }
 
     processRouteEnd(requestGuid) {
-
-        console.log( 'RouteStore processRouteEnd' );
 
         // trigger recieved route down to components
         this.trigger({
