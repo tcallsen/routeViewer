@@ -189,7 +189,7 @@ class Map extends Reflux.Component {
 			baseStyle[0].setStroke(  
 
 				new ol.style.Stroke({
-					color: 'red',
+					color: 'rgb(253,141,1)',
 					width: 2.5
 				})
 
@@ -201,10 +201,10 @@ class Map extends Reflux.Component {
 
 				new ol.style.Circle({
 					fill: new ol.style.Fill({
-						color: 'rgba(255,0,0,0.4)'
+						color: 'rgba(253,141,1,.5)'
 					}),
 					stroke: new ol.style.Stroke({
-						color: '#3399CC',
+						color: 'rgb(29,142,53)',
 						width: 1.25
 					}),
 					radius: 5
