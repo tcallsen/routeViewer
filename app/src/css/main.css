@@ -1,7 +1,106 @@
-div#map {
-
+html, body, div#app {
+    font-family: 'Roboto', sans-serif;
+    height: 100%;
+    margin: 0;
+    color: rgb(101,101,101);
 }
 
-div#map.crosshair {
+div#mapContainer {
+	height: 100%;
+	width: 100%;
+	position: fixed;
+}
+
+div#mapContainer.crosshair {
 	cursor: crosshair;
+}
+
+div#mapContainer div#routeControl {
+	left: .5em;
+    bottom: .5em;
+    position: absolute;
+    z-index: 100;
+}
+
+div#mapContainer div#rerunControl {
+    left: 2.7em;
+    bottom: .5em;
+    position: absolute;
+    z-index: 100;
+}
+
+div#mapContainer div#clearControl {
+	left: 4.95em;
+    bottom: .5em;
+    position: absolute;
+    z-index: 100;
+}
+
+div#mapContainer div.custom-control img {
+	width: 20px;
+    padding-top: 1px;
+}
+
+div#mapContainer button:hover,
+div#mapContainer div.ol-control:hover {
+	cursor:pointer;
+}
+
+div#mapContainer div#routesListControl {
+  	transition: height .25s;
+	bottom: 0px;
+    left: 0px;
+    height: 0;
+    background-color: rgba(255,255,255,0.7);
+    z-index: 75;
+    width: 160px;
+    border-top-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+
+div#mapContainer div#routesListControl.active {
+	height: calc( 100% - 78px );
+}
+
+div#mapContainer div#routesListControl:hover {
+	background-color: rgba(255,255,255,0.75);
+	cursor: inherit;
+}
+
+div#mapContainer div#routesListControl h5 {
+    font-size: 14px;
+    padding: 0 0 4px;
+    margin: 6px;
+    text-align: center;
+    font-weight: normal;
+    border-bottom: 1px solid rgb(101,101,101);
+}
+
+div#mapContainer div#routesListControl div#routesListScrollContainer {
+    overflow-y: auto;
+    max-height: calc( 100% - 80px );
+}
+
+div#mapContainer div#routesListControl ul#routesList {
+    padding: 0 16px;
+    font-size: 14px;
+    list-style: none;
+    margin: 0;
+}
+
+div#mapContainer div#routesListControl ul#routesList li.routesListItem {
+    margin: 4px 0;
+}
+
+div#mapContainer div#routesListControl ul#routesList li.routesListItem p {
+    margin: 0;
+    padding: 0;
+    display: inline-block;
+}
+
+div#mapContainer div#routesListControl ul#routesList li.routesListItem p:hover {
+    font-weight: bold;
+    cursor: pointer;
+    letter-spacing: 1px;
 }

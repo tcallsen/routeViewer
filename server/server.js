@@ -32,6 +32,9 @@ app.get('/', function(req, res){
 	res.sendFile(__dirname + '/static/index.html');
 });
 
+// STATIC FILES
+app.use('/static', express.static(path.join(__dirname, 'static')))
+
 // CONFIG - serve config options to frontend
 app.get('/config.json', function(req, res){
 	
@@ -57,83 +60,44 @@ http.listen(3000, function(){
 
 });
 
-// POLL FILE and push any new routes to frontend
-var sentRoutes = {};
-var sentStartGuids = {};
-var sentEndGuids = {};
-var filePath = path.join( webappConfig.routesInterface.path );
-var watchLock = false; //use watchLock to prevent extra fs.watch events from firing WHILE file is being updated
+// REDIS
+var Redis = require('redis');
+var client = Redis.createClient();
+function checkForRoutes() {
+	client.blpop(['scored_routes',0], function (listName, item) {
+		
+		var messageObject = JSON.parse( item[1] );
 
-//check to ensure file exists
-var checkFilePromise = new Promise( (resolve,reject) => {
-	fs.open(filePath,'r',function(err, fd){
-		if (err) {
-			fs.writeFile(filePath, '', function(err) {
-				if (err) console.log('ERROR WRITING temp routes text file!! Exiting');
-				else resolve();
+		//parse and send forward new routes
+		if (messageObject.type === 'FeatureCollection') {
+    		Object.keys(io.sockets.connected).forEach( socketKey => {
+				io.sockets.connected[socketKey].emit('newRoute', item[1] );
 			});
-		} else resolve();
-	});
-});
+    	}
 
-checkFilePromise.then( () => {
-
-	fs.watch( filePath , {encoding: 'buffer'}, (eventType) => {
-		watchLock = true;
-		setTimeout(() => {
-			//send only new routes forward on file update 
-			//var newRoutes = [];
-			fs.readFile(filePath, {encoding: 'utf-8'}, function(err,fileData){
-			    
-			    //read in updated file
-			    fileData.split(/\r?\n/).forEach( (message,index) => {
-			  
-			    	//skip empty lines/routes
-			    	if (!message.length) return;
-
-			    	var messageObject = JSON.parse(message);
-
-			    	//parse and send forward new routestart messages
-			    	if (messageObject.type === 'routestart' && Object.keys(sentStartGuids).indexOf( messageObject.guid ) == -1) {
-			    		sentStartGuids[messageObject.guid] = '';
-			    		Object.keys(io.sockets.connected).forEach( socketKey => {
-							io.sockets.connected[socketKey].emit('routestart', messageObject.guid );
-						});
-		    		}
-
-		    		//parse and send forward new routeend messages
-			    	if (messageObject.type === 'routeend' && Object.keys(sentEndGuids).indexOf( messageObject.guid ) == -1) {
-			    		sentEndGuids[messageObject.guid] = '';
-			    		Object.keys(io.sockets.connected).forEach( socketKey => {
-							io.sockets.connected[socketKey].emit('routeend', messageObject.guid );
-						});
-		    		}
-
-			    	//parse and send forward new routes
-			    	if (messageObject.type === 'FeatureCollection') {
-						//hash route to detect and remove duplicates
-				    	var routeHash = crypto.createHash('sha256').update(message).digest('hex');
-				    	if (Object.keys(sentRoutes).indexOf( routeHash ) == -1) {
-				    		sentRoutes[routeHash] = ''; //track route as sent
-				    		//newRoutes.push( message );
-				    		Object.keys(io.sockets.connected).forEach( socketKey => {
-								io.sockets.connected[socketKey].emit('newRoute', message );
-							});
-				    	}
-			    	}
-
-			    });
-
-				//send new routes to connected sockets
-				/* if (newRoutes.length) {
-			    	Object.values(io.sockets.connected).forEach( socket => {
-						socket.emit('newRoutes', newRoutes );
-					});
-			    } */
-
+		//parse and send forward new routestart messages
+		else if (messageObject.type === 'routestart') {
+			Object.keys(io.sockets.connected).forEach( socketKey => {
+				io.sockets.connected[socketKey].emit('routestart', messageObject.guid );
 			});
-			watchLock = false;
-		}, 500);
-	});
+		}
 
-});
+		//parse and send forward new routeend messages
+		else if (messageObject.type === 'routeend') {
+			Object.keys(io.sockets.connected).forEach( socketKey => {
+				io.sockets.connected[socketKey].emit('routeend', messageObject.guid );
+			});
+		}
+
+		//prase and send foward new score updates
+		else if (messageObject.type === 'newBestScore') {
+			Object.keys(io.sockets.connected).forEach( socketKey => {
+				io.sockets.connected[socketKey].emit('newBestScore', item[1] );
+			});
+		}
+
+		checkForRoutes();
+
+	});
+}
+checkForRoutes();
