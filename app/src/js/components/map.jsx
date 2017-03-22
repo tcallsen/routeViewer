@@ -88,6 +88,7 @@ class Map extends Reflux.Component {
 			],
 			view: new ol.View({
 				//projection: 'EPSG:4326',
+				//sfcenter: [-13626306.53671995, 4549638.757784466], 
 				center: [-9947818.324464286, 5324462.825544785], //this.to3857( [-89.386311071876291, 43.0767353342079] ),
 				zoom: 15, //13
 			}),
@@ -268,6 +269,8 @@ class Map extends Reflux.Component {
 	}
 
 	handleMapClick(event) {
+
+		//console.log(this.state.map.map.getView().getCenter(), this.state.map.map.getView().getZoom());
 
 		// ROUTING
 
