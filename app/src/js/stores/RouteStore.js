@@ -24,6 +24,15 @@ class RouteStore extends Reflux.Store {
         socket.on( 'routestart' , this.processRouteStart.bind(this) );
         socket.on( 'routeend' , this.processRouteEnd.bind(this) );
         socket.on( 'newRoute' , this.processNewRoute.bind(this) );
+        socket.on( 'newBestScore' , (message) => {
+
+            var messageJson = JSON.parse(message);
+
+            this.onHighlightRoutes( [messageJson.routeSequence] )
+
+            console.log('newBestScore recieved: ' + messageJson.routeSequence);
+
+        });
 
         //set default app state
         this.state = {

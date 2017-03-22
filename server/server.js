@@ -64,7 +64,7 @@ http.listen(3000, function(){
 var Redis = require('redis');
 var client = Redis.createClient();
 function checkForRoutes() {
-	client.blpop(['routes',0], function (listName, item) {
+	client.blpop(['scored_routes',0], function (listName, item) {
 		
 		var messageObject = JSON.parse( item[1] );
 
@@ -86,6 +86,13 @@ function checkForRoutes() {
 		else if (messageObject.type === 'routeend') {
 			Object.keys(io.sockets.connected).forEach( socketKey => {
 				io.sockets.connected[socketKey].emit('routeend', messageObject.guid );
+			});
+		}
+
+		//prase and send foward new score updates
+		else if (messageObject.type === 'newBestScore') {
+			Object.keys(io.sockets.connected).forEach( socketKey => {
+				io.sockets.connected[socketKey].emit('newBestScore', item[1] );
 			});
 		}
 
