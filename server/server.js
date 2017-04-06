@@ -64,7 +64,7 @@ http.listen(3000, function(){
 var Redis = require('redis');
 var client = Redis.createClient();
 function checkForRoutes() {
-	client.blpop(['scored_routes',0], function (listName, item) {
+	client.blpop(['routes',0], function (listName, item) {
 		
 		var messageObject = JSON.parse( item[1] );
 

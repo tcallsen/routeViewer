@@ -78,6 +78,15 @@ class Map extends Reflux.Component {
 			            ]
 			        })
 			    }),
+
+			    /* new ol.layer.Tile({
+					extent: [-9971782.768213067,5307255.950520662,-9932059.293913579,5339567.219239632],
+					source: new ol.source.TileWMS(({
+						url: 'http://costia.gritto.net:8880/geoserver/cite/wms',
+						params: {'LAYERS': 'cite:renderLandUsages', 'TILED': true},
+						serverType: 'geoserver'
+					}))
+				}), */
 			    
 			    routesLayer,
 
@@ -251,7 +260,7 @@ class Map extends Reflux.Component {
 	executeRoutingRequest(routingRequestBody) {
 
 		//derive routing REST endpoint from webappConfig
-		var routingRestEndpointUrl = this.state.config.routingRestEndpoint.protocol + '://' + this.state.config.routingRestEndpoint.host + ':' + this.state.config.routingRestEndpoint.port + '/' + this.state.config.routingRestEndpoint.path + '/getRoutes/';
+		var routingRestEndpointUrl = this.state.config.routingRestEndpoint.protocol + '://' + this.state.config.routingRestEndpoint.host + ':' + this.state.config.routingRestEndpoint.port + '/' + this.state.config.routingRestEndpoint.path + '/getRoutesRandom/';
 
 		request.post( routingRestEndpointUrl )
 			.send( routingRequestBody )
