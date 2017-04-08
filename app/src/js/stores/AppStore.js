@@ -43,6 +43,25 @@ class AppStore extends Reflux.Store {
         });
     }
 
+    onUpdateMapWmsLayerDefinitions(args, guid) {
+        if (typeof guid == 'undefined') {
+            this.setState({
+                map: Object.assign( this.state.map , { wmsLayerDefinitions: args } )
+            });
+        } else {
+            var updatedMapLayerDefinitions = this.state.map.wmsLayerDefinitions;
+            var updateMapLayerDefinition = updatedMapLayerDefinitions[guid];
+            Object.keys(args).forEach( argKey => {
+                if (argKey === 'layer') console.log("WARNING - trying to update layer property on wmsLayerDefinitions - may lose track of layer obj reference in map!!")
+                updateMapLayerDefinition[argKey] = args[argKey];
+            });
+            updatedMapLayerDefinitions[guid] = updateMapLayerDefinition;
+            this.setState({
+                map: Object.assign( this.state.map , { wmsLayerDefinitions: updatedMapLayerDefinitions } )
+            });
+        }
+    }
+
     onClearRoutes(args) {
         this.state.map.context.clearRoutesLayer();
         this.setState({

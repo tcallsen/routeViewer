@@ -8,6 +8,7 @@ var Actions = Reflux.createActions([
 	'rerunPreviousRoutingRequest',
 
 	'setMapState',
+	'updateMapWmsLayerDefinitions',
 	'clearRoutes',
 
 	'highlightRoutes'

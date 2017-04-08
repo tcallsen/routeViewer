@@ -37,6 +37,7 @@ class Map extends Reflux.Component {
 		this.getFeatureStyle = this.getFeatureStyle.bind(this);
 		this.executeRoutingRequest = this.executeRoutingRequest.bind(this);
 		this.getHighlightedFeatureStyle = this.getHighlightedFeatureStyle.bind(this);
+		this.retrieveWmsMapLayers = this.retrieveWmsMapLayers.bind(this);
 
 	}
 
@@ -65,6 +66,8 @@ class Map extends Reflux.Component {
 			})
 		});
 
+		var wmsLayersGroup = new ol.layer.Group();
+
 		var map = new ol.Map({
 			target: this.refs.mapContainer,
 			layers: [
@@ -79,15 +82,8 @@ class Map extends Reflux.Component {
 			        })
 			    }),
 
-			    /* new ol.layer.Tile({
-					extent: [-9971782.768213067,5307255.950520662,-9932059.293913579,5339567.219239632],
-					source: new ol.source.TileWMS(({
-						url: 'http://costia.gritto.net:8880/geoserver/cite/wms',
-						params: {'LAYERS': 'cite:renderLandUsages', 'TILED': true},
-						serverType: 'geoserver'
-					}))
-				}), */
-			    
+				wmsLayersGroup,
+
 			    routesLayer,
 
 			    highlightedRoutesLayer,
@@ -98,8 +94,9 @@ class Map extends Reflux.Component {
 			view: new ol.View({
 				//projection: 'EPSG:4326',
 				//sfcenter: [-13626306.53671995, 4549638.757784466], 
-				center: [-9947818.324464286, 5324462.825544785], //this.to3857( [-89.386311071876291, 43.0767353342079] ),
-				zoom: 15, //13
+				//madcenter: [-9947818.324464286, 5324462.825544785], //this.to3857( [-89.386311071876291, 43.0767353342079] ),
+				center: [-8573106.89777416, 4706908.00530346],
+				zoom: 13, //13
 			}),
 			controls: ol.control.defaults({ rotate: false }).extend([
 				this.refs.routeControl.control,
@@ -114,11 +111,97 @@ class Map extends Reflux.Component {
 
 		Actions.setMapState({ 
 			map: map,
+			wmsLayersGroup: wmsLayersGroup,
 			routesLayer: routesLayer,
 			highlightedRoutesLayer: highlightedRoutesLayer,
 			snapToLayer: snapToLayer,
+			wmsLayerDefinitions: {},
 			context: this
 		});
+
+		//retrieve wms map layers
+		this.retrieveWmsMapLayers();
+
+	}
+
+	componentDidUpdate(prevProps, prevState) {
+		
+		//console.log('map componentDidUpdate');
+
+		//RECONCILE IF wmsMapLayers has been updated
+
+			var existingEnabled = [];
+			var existingDisabled = [];
+			this.state.map.wmsLayersGroup.getLayers().getArray().forEach( layer => {
+				existingEnabled.push( layer.get('guid') );
+			});
+
+			var updateEnabled = [];
+			var updateDisabled = [];
+			Object.keys(this.state.map.wmsLayerDefinitions).forEach( layerDefinitionKey => {
+				var layerDefinition = this.state.map.wmsLayerDefinitions[layerDefinitionKey];
+				if (layerDefinition.enabled) updateEnabled.push( layerDefinition.layer.get('guid') );
+				else updateDisabled.push( layerDefinition.layer.get('guid') );
+			});
+
+			//console.log( 'existingEnabled' , existingEnabled );
+			//console.log( 'existingDisabled' , existingDisabled );
+
+			//console.log( 'updateEnabled' , updateEnabled );
+			//console.log( 'updateDisabled' , updateDisabled );
+
+			//add any enabled to map
+			updateEnabled.forEach( layerGuid => {
+				if (existingEnabled.indexOf(layerGuid) == -1) {
+					this.state.map.wmsLayersGroup.getLayers().push( this.state.map.wmsLayerDefinitions[layerGuid].layer );
+				}
+			});
+
+			updateDisabled.forEach( layerGuid => {
+				if (existingEnabled.indexOf(layerGuid) != -1) {
+					this.state.map.wmsLayersGroup.getLayers().remove( this.state.map.wmsLayerDefinitions[layerGuid].layer );
+				}
+			});
+
+	}
+
+	retrieveWmsMapLayers() {
+
+		var DOMParser = global.DOMParser = require('xmldom').DOMParser;
+		var WMSCapabilities = require('wms-capabilities');
+
+		request.get( 'http://costia.gritto.net:8880/geoserver/ows?service=wms&version=1.1.1&request=GetCapabilities' )
+			.set('Accept', 'application/xml')
+			.end( (err, res) => {
+	
+				var getCapabilitiesObj = new WMSCapabilities(res.text).toJSON();
+				var capabilityLayers = getCapabilitiesObj.Capability.Layer.Layer;
+
+				var assembledLayers = {};
+
+				capabilityLayers.forEach( (layer,index) => {
+
+					//assemble layer information into OL layer object
+					var olLayer = new ol.layer.Tile({
+						extent: [ layer.BoundingBox[0].extent[0] , layer.BoundingBox[0].extent[1] , layer.BoundingBox[0].extent[2] , layer.BoundingBox[0].extent[3] ],
+						source: new ol.source.TileWMS(({
+							url: 'http://costia.gritto.net:8880/geoserver/route/wms',
+							params: {'LAYERS': layer.Name, 'TILED': true},
+							serverType: 'geoserver'
+						})),
+						guid: layer.Name
+					});
+
+					assembledLayers[layer.Name] = {
+						enabled: false,
+						layer: olLayer
+					};
+
+				});
+
+				Actions.updateMapWmsLayerDefinitions(assembledLayers);
+
+			});
 
 	}
 
@@ -230,6 +313,8 @@ class Map extends Reflux.Component {
 
 	handleRouteStoreUpdate(args) {
 		
+		console.log('handleRouteStoreUpdate', args);
+
 		if (args.type === 'newRoute') {
 
 			this.state.map.routesLayer.getSource().addFeatures( args.features );
@@ -280,9 +365,8 @@ class Map extends Reflux.Component {
 	handleMapClick(event) {
 
 		//console.log(this.state.map.map.getView().getCenter(), this.state.map.map.getView().getZoom());
-
+		
 		// ROUTING
-
 		if (this.state.routing.active) {
 
 			var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.map.getCoordinateFromPixel(event.pixel)) ) );
@@ -298,7 +382,16 @@ class Map extends Reflux.Component {
 
 			}
 
+			return;
+
 		}
+
+		// TEST - toggling of map layer
+		var layerKey = Object.keys(this.state.map.wmsLayerDefinitions)[ Math.floor(Math.random() *  Object.keys(this.state.map.wmsLayerDefinitions).length ) + 0   ];
+		console.log('toggling: ' + layerKey);
+		Actions.updateMapWmsLayerDefinitions({
+			enabled: !this.state.map.wmsLayerDefinitions[layerKey].enabled
+		}, layerKey);
 
 	}
 
