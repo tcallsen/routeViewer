@@ -62,9 +62,19 @@ class AppStore extends Reflux.Store {
         }
     }
 
-    onToggleMapControlVisibility() {
+    onToggleMapControlVisibility(forceVisibility) {
 
-        if (this.state.map.layerControlVisible) {
+        console.log( 'toggleMapControlVisibility' , forceVisibility );
+
+        if (typeof forceVisibility !== 'undefined') {
+
+            // SET per forceVisibility
+            
+            this.setState({
+                map: Object.assign( this.state.map , { layerControlVisible: forceVisibility } )
+            });
+
+        } else if (this.state.map.layerControlVisible ) {
 
             // HIDE layers
 
@@ -110,6 +120,9 @@ class AppStore extends Reflux.Store {
             });
 
         } else {
+
+            //hide layers list
+            Actions.toggleMapControlVisibility(false);
 
             this.setState({
                 routing: {
