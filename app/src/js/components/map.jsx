@@ -24,7 +24,9 @@ class Map extends Reflux.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			map: null,
+			map: {
+                wmsLayerDefinitions: []
+            },
 			routesLayer: null
 		};
 		
@@ -133,9 +135,6 @@ class Map extends Reflux.Component {
 
 		//RECONCILE IF wmsMapLayers has been updated
 
-			//ensure wms layers have been loaded!
-	    	if (!this.state.map.wmsLayerDefinitions.children || !this.state.map.wmsLayerDefinitions.children.length) return;
-
 	    	//console.log('map componentDidUpdate');
 
 			var existingEnabled = [];
@@ -175,9 +174,6 @@ class Map extends Reflux.Component {
 
     getWmsLayerDefinitionsFlat() {
         
-    	//ensure wms layers have been loaded!
-    	if (!this.state.map || !this.state.map.wmsLayerDefinitions.children || !this.state.map.wmsLayerDefinitions.children.length) return {};
-
         var returnDefinitions= {};
 
         var recurseWmsLayerDefinition = function ( wmsLayerDef ) {
@@ -186,7 +182,7 @@ class Map extends Reflux.Component {
         }
 
         //recurse through chilren @ root
-        this.state.map.wmsLayerDefinitions.children.forEach( wmsLayerDef => recurseWmsLayerDefinition( wmsLayerDef ) );
+        if (this.state.map.wmsLayerDefinitions.children) this.state.map.wmsLayerDefinitions.children.forEach( wmsLayerDef => recurseWmsLayerDefinition( wmsLayerDef ) );
 
         return returnDefinitions;
     }
@@ -516,11 +512,16 @@ class Map extends Reflux.Component {
 
 	render () {
 
+		//derive mapContainer className
+		var className = "";
+		if (this.state.map.layerControlVisible)  className += 'layerControlVisible ';
+		if (this.state.routing.active) className += ' routingEnabled ';
+
 		return (
 
 			<div>
 
-				<div ref="mapContainer" id="mapContainer" className={ (this.state.routing.active) ? 'crosshair' : '' } >
+				<div ref="mapContainer" id="mapContainer" className={ className } >
 				</div>
 
 				<LayerControl

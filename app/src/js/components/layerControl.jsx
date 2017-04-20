@@ -104,13 +104,8 @@ class LayerControl extends Reflux.Component {
 	}
 
 	render () {
-		
-		//derive layerControl className
-		var className = "ol-unselectable ol-control custom-control";
-		if (this.props.isVisible) className += ' visible';
-
 		return (
-			<div id="layerControl" className={className}>
+			<div id="layerControl" className="ol-unselectable ol-control custom-control">
 				<button id="layerControlButton"><img src='/static/img/ic_layers_white_24dp_2x.png'/></button>
 				<h5>Route Enrichment Data Layers</h5>
 				<div id="layerControlListContainer">

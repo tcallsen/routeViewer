@@ -11,7 +11,7 @@ div#mapContainer {
 	position: fixed;
 }
 
-div#mapContainer.crosshair {
+div#mapContainer.className {
 	cursor: crosshair;
 }
 
@@ -35,7 +35,7 @@ div#mapContainer div#layerControl:hover {
     background-color: rgba(255,255,255,0.85);
 }
 
-div#mapContainer div#layerControl.visible {
+div#mapContainer.layerControlVisible div#layerControl {
     width: 250px;
     height: 248px;
 }
@@ -63,7 +63,7 @@ div#mapContainer div#layerControl div#layerControlListContainer {
     overflow-y: auto;
 }
 
-div#mapContainer div#layerControl.visible div#layerControlListContainer {
+div#mapContainer.layerControlVisible div#layerControl div#layerControlListContainer {
     display: block;
 }
 
@@ -144,7 +144,11 @@ div#mapContainer div#routesListControl {
 }
 
 div#mapContainer div#routesListControl.active {
-	height: calc( 100% - 78px );
+	height: calc( 100% - 112px );
+}
+
+div#mapContainer.layerControlVisible div#routesListControl.active {
+    height: calc( 100% - 334px );
 }
 
 div#mapContainer div#routesListControl:hover {

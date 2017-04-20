@@ -32,7 +32,9 @@ class AppStore extends Reflux.Store {
                 percentComplete: -1
             },
             previousRoutingRequest: null,
-            map: null
+            map: {
+                wmsLayerDefinitions: []
+            }
         };
 
     }
@@ -63,8 +65,6 @@ class AppStore extends Reflux.Store {
     }
 
     onToggleMapControlVisibility(forceVisibility) {
-
-        console.log( 'toggleMapControlVisibility' , forceVisibility );
 
         if (typeof forceVisibility !== 'undefined') {
 
