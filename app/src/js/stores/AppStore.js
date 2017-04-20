@@ -62,6 +62,28 @@ class AppStore extends Reflux.Store {
         }
     }
 
+    onToggleMapControlVisibility() {
+
+        if (this.state.map.layerControlVisible) {
+
+            // HIDE layers
+
+            this.setState({
+                map: Object.assign( this.state.map , { layerControlVisible: !this.state.map.layerControlVisible } )
+            });
+
+        } else {
+
+            // SHOW layers
+
+            this.setState({
+                map: Object.assign( this.state.map , { layerControlVisible: !this.state.map.layerControlVisible } )
+            });
+
+        }
+
+    }
+
     onClearRoutes(args) {
         this.state.map.context.clearRoutesLayer();
         this.setState({

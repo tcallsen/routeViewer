@@ -29,14 +29,12 @@ class LayerControl extends Reflux.Component {
 		    element: ReactDOM.findDOMNode(this)
 		});
 
-		//document.getElementById('layerControl').addEventListener("click", this.toggleLayerControl.bind(this));
+		document.getElementById('layerControlButton').addEventListener("click", this.toggleLayerControl.bind(this));
 
 	}	
 
 	toggleLayerControl() {
-		
-		console.log( 'toggleLayerControl clicked' , this.props );
-
+		Actions.toggleMapControlVisibility();
 	}
 
 	buildLayerListItems() {
@@ -64,7 +62,6 @@ class LayerControl extends Reflux.Component {
 
 		var rootDomNode = (
 			<div>
-				<h5>Route Enrichment Data Layers</h5>
 				{ (Object.keys(this.props.layerDefinitions).length > 0) ? buildChildrenList( this.props.layerDefinitions ) : null }
 			</div>
 		);
@@ -94,10 +91,18 @@ class LayerControl extends Reflux.Component {
 	}
 
 	render () {
+		
+		//derive layerControl className
+		var className = "ol-unselectable ol-control custom-control";
+		if (this.props.isVisible) className += ' visible';
+
 		return (
-			<div id="layerControl" className="ol-unselectable ol-control custom-control">
-				<button><img src='/static/img/ic_layers_white_24dp_2x.png'/></button>
-				{ this.buildLayerListItems() }
+			<div id="layerControl" className={className}>
+				<button id="layerControlButton"><img src='/static/img/ic_layers_white_24dp_2x.png'/></button>
+				<h5>Route Enrichment Data Layers</h5>
+				<div id="layerControlListContainer">
+					{ this.buildLayerListItems() }
+				</div>
 			</div>
 		);
 	}

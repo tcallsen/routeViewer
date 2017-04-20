@@ -116,6 +116,7 @@ class Map extends Reflux.Component {
 		Actions.setMapState({ 
 			map: map,
 			wmsLayersGroup: wmsLayersGroup,
+			layerControlVisible: false,
 			routesLayer: routesLayer,
 			highlightedRoutesLayer: highlightedRoutesLayer,
 			snapToLayer: snapToLayer,
@@ -521,6 +522,7 @@ class Map extends Reflux.Component {
 				<LayerControl
 					ref="layerControl" 
 					layerDefinitions={ (!!this.state.map) ? this.state.map.wmsLayerDefinitions : {} }
+					isVisible={ (!!this.state.map) ? this.state.map.layerControlVisible : false }
 					getWmsLayerDefinitionsByGuid={this.getWmsLayerDefinitionsByGuid} />
 
 				<RouteControl 

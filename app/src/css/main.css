@@ -18,15 +18,50 @@ div#mapContainer.crosshair {
 /* Layer list styles */
 
 div#mapContainer div#layerControl {
+    transition: width .25s, height .25s;
     left: .5em;
     top: 4.3em;
     position: absolute;
     z-index: 100;
+    width: 1.65em;
+    height: 1.65em;
+    overflow: hidden;
+    white-space: nowrap;
+    background-color: rgba(255,255,255,0.75);
+}
+
+div#mapContainer div#layerControl:hover {
+    cursor: inherit;
+    background-color: rgba(255,255,255,0.75);
+}
+
+div#mapContainer div#layerControl.visible {
+    width: 320px;
+    height: 248px;
+}
+
+div#mapContainer div#layerControl button#layerControlButton {
+    display: inline-block;
+    vertical-align: middle;
 }
 
 div#mapContainer div#layerControl h5 {
-    font-size: 15px;
-    margin: 4px;
+    font-size: 14px;
+    font-weight: normal;
+    border-bottom: 1px solid rgb(101,101,101);
+    margin: 0 6px;
+    padding: 0 0 4px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+div#mapContainer div#layerControl.visible div#layerControlListContainer {
+    display: block;
+    margin: 0 0 0 28px;
+}
+
+div#mapContainer div#layerControl div#layerControlListContainer {
+    display: none;
 }
 
 div#mapContainer div#layerControl p {
