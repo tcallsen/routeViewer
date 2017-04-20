@@ -23,12 +23,6 @@ class Map extends Reflux.Component {
 	
 	constructor(props) {
 		super(props);
-		this.state = {
-			map: {
-                wmsLayerDefinitions: []
-            },
-			routesLayer: null
-		};
 		
 		//register AppState store
 		this.store = AppStore;

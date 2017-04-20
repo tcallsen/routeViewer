@@ -19,7 +19,13 @@ class App extends Reflux.Component {
 		this.store = AppStore;
 	}
 
+	shouldComponentUpdate(nextProps, nextState) {
+		return nextState.routing.active !== this.state.routing.active ||
+			nextState.routing.percentComplete !== this.state.routing.percentComplete;
+	}
+
 	render () {
+
 		return (
 
 			<div>
