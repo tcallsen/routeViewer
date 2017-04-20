@@ -27,16 +27,16 @@ div#mapContainer div#layerControl {
     height: 1.65em;
     overflow: hidden;
     white-space: nowrap;
-    background-color: rgba(255,255,255,0.75);
+    background-color: rgba(255,255,255,0.85);
 }
 
 div#mapContainer div#layerControl:hover {
     cursor: inherit;
-    background-color: rgba(255,255,255,0.75);
+    background-color: rgba(255,255,255,0.85);
 }
 
 div#mapContainer div#layerControl.visible {
-    width: 320px;
+    width: 250px;
     height: 248px;
 }
 
@@ -55,28 +55,42 @@ div#mapContainer div#layerControl h5 {
     vertical-align: middle;
 }
 
-div#mapContainer div#layerControl.visible div#layerControlListContainer {
-    display: block;
-    margin: 0 0 0 28px;
-}
-
 div#mapContainer div#layerControl div#layerControlListContainer {
     display: none;
+    height: 222px;
+    margin: 0 0 0 28px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+div#mapContainer div#layerControl.visible div#layerControlListContainer {
+    display: block;
+}
+
+div#mapContainer div#layerControl input[type=checkbox] {
+    display: inline-block;
+    vertical-align: middle;
+    height: 8px;
+    width: 8px;
+    margin: 0;
 }
 
 div#mapContainer div#layerControl p {
-    font-size: 15px;
-    margin: 0px;
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 14px;
+    margin: 0px 0 0 8px;
     padding: 0px;
 }
 
 div#mapContainer div#layerControl ul.wmsLayerList {
-    margin: 4px 0;
+    margin: 0;
     padding: 0 14px;
 }
 
 div#mapContainer div#layerControl li.wmsLayerListItem {
     list-style-type: none;
+    margin: 4px 0;
 }
 
 div#mapContainer div#routeControl {

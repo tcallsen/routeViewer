@@ -234,7 +234,7 @@ class Map extends Reflux.Component {
 			extent: [ layerNode.BoundingBox[0].extent[0] , layerNode.BoundingBox[0].extent[1] , layerNode.BoundingBox[0].extent[2] , layerNode.BoundingBox[0].extent[3] ],
 			source: new ol.source.TileWMS(({
 				url: 'http://costia.gritto.net:8880/geoserver/route/wms',
-				params: {'LAYERS': layerNode.Name || layerNode.Title , 'TILED': true},
+				params: {'LAYERS': layerNode.Name , 'TILED': true},
 				serverType: 'geoserver'
 			})),
 			guid: layerNode.Name || layerNode.Title,
@@ -244,6 +244,7 @@ class Map extends Reflux.Component {
 		var currentNewLayerNode = {
 			enabled: false,
 			name: layerNode.Name || layerNode.Title,
+			title: layerNode.Title || layerNode.Name,
 			layer: olLayer,
 			children: []
 		};

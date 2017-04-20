@@ -46,8 +46,9 @@ class LayerControl extends Reflux.Component {
 			parentWmsLayerDef.children.forEach( childLayerDefinition => {
 
 				var childLayerElement = (
-					<li className="wmsLayerListItem" key={childLayerDefinition.name}>
-						<p data-wmslayerguid={childLayerDefinition.name}>{childLayerDefinition.name}</p>
+					<li className="wmsLayerListItem" data-wmslayerguid={childLayerDefinition.name} key={childLayerDefinition.name}>
+						<input type="checkbox" />
+						<p>{childLayerDefinition.title}</p>
 						{ (childLayerDefinition.children.length > 0) ? buildChildrenList( childLayerDefinition ) : null }
 					</li>
 				);
@@ -72,11 +73,18 @@ class LayerControl extends Reflux.Component {
 
 	componentDidUpdate(prevProps, prevState) {
 		
-		//strage issues setting event handlers with react when element within OpenLayers - here is my hack
-		document.querySelectorAll('div#mapContainer div#layerControl p').forEach( domElement => {
+		//TODO - strip event handles on componentWillUpdate
 
-			if (typeof domElement.onclick !== "function") {
-				domElement.addEventListener('click', this.toggleWmsLayerVisibility);
+		//strage issues setting event handlers with react when element within OpenLayers - here is my hack
+		var toggleElements = [];
+		document.querySelectorAll('div#mapContainer div#layerControl p').forEach( domElement => toggleElements.push(domElement) ); //add labels
+		document.querySelectorAll('div#mapContainer div#layerControl input[type=checkbox]').forEach( domElement => toggleElements.push(domElement) ); //add checkboxes
+
+		toggleElements.forEach( domElement => {
+
+			if (typeof domElement.onclick !== "function" && typeof domElement.onchange !== "function") {
+				if (domElement.tagName === 'input') domElement.addEventListener('change', this.toggleWmsLayerVisibility);
+				else domElement.addEventListener('click', this.toggleWmsLayerVisibility);
 			} else console.log('encountered DOM element with onclick');
 
 		});
@@ -84,7 +92,7 @@ class LayerControl extends Reflux.Component {
 	}
 
 	toggleWmsLayerVisibility(event) {
-		var wmsLayerGuid = event.target.getAttribute('data-wmslayerguid');
+		var wmsLayerGuid = event.target.parentNode.getAttribute('data-wmslayerguid');
 		Actions.updateMapWmsLayerDefinitions({
 			enabled: !this.props.getWmsLayerDefinitionsByGuid(wmsLayerGuid).enabled
 		}, wmsLayerGuid);
