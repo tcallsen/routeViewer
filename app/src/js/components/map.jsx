@@ -9,6 +9,7 @@ import AppStore from '../stores/AppStore.js';
 import RouteStore from '../stores/RouteStore.js';
 import Actions from '../actions/actions.js';
 
+import LayerControl from '../components/layerControl.jsx';
 import RouteControl from '../components/routeControl.jsx';
 import RerunControl from '../components/rerunControl.jsx';
 import ClearControl from '../components/clearControl.jsx';
@@ -101,6 +102,7 @@ class Map extends Reflux.Component {
 				zoom: 13, //13
 			}),
 			controls: ol.control.defaults({ rotate: false }).extend([
+				this.refs.layerControl.control,
 				this.refs.routeControl.control,
 				this.refs.rerunControl.control,
 				this.refs.clearControl.control,
@@ -435,13 +437,6 @@ class Map extends Reflux.Component {
 
 		}
 
-		// TEST - toggling of map layer
-		var layerKey = Object.keys(this.getWmsLayerDefinitionsFlat())[ Math.floor(Math.random() *  Object.keys(this.state.map.wmsLayerDefinitions).length ) + 0   ];
-		console.log('toggling: ' + layerKey);
-		Actions.updateMapWmsLayerDefinitions({
-			enabled: !this.getWmsLayerDefinitionsByGuid(layerKey).enabled
-		}, layerKey);
-
 	}
 
 	handleMapPointerMove(event) {
@@ -522,6 +517,11 @@ class Map extends Reflux.Component {
 
 				<div ref="mapContainer" id="mapContainer" className={ (this.state.routing.active) ? 'crosshair' : '' } >
 				</div>
+
+				<LayerControl
+					ref="layerControl" 
+					layerDefinitions={ (!!this.state.map) ? this.state.map.wmsLayerDefinitions : {} }
+					getWmsLayerDefinitionsByGuid={this.getWmsLayerDefinitionsByGuid} />
 
 				<RouteControl 
 					ref="routeControl" 

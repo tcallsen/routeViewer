@@ -43,6 +43,7 @@ class RoutesListControl extends Reflux.Component {
 
 	componentDidUpdate(prevProps, prevState) {
 		
+		//strage issues setting event handlers with react when element within OpenLayers - here is my hack
 		document.querySelectorAll('li.routesListItem p').forEach( domElement => {
 
 			if (typeof domElement.onclick !== "function") {

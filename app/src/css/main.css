@@ -15,6 +15,35 @@ div#mapContainer.crosshair {
 	cursor: crosshair;
 }
 
+/* Layer list styles */
+
+div#mapContainer div#layerControl {
+    left: .5em;
+    top: 4.3em;
+    position: absolute;
+    z-index: 100;
+}
+
+div#mapContainer div#layerControl h5 {
+    font-size: 15px;
+    margin: 4px;
+}
+
+div#mapContainer div#layerControl p {
+    font-size: 15px;
+    margin: 0px;
+    padding: 0px;
+}
+
+div#mapContainer div#layerControl ul.wmsLayerList {
+    margin: 4px 0;
+    padding: 0 14px;
+}
+
+div#mapContainer div#layerControl li.wmsLayerListItem {
+    list-style-type: none;
+}
+
 div#mapContainer div#routeControl {
 	left: .5em;
     bottom: .5em;
