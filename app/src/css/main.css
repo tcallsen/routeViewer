@@ -125,6 +125,10 @@ div#mapContainer div.custom-control img {
     padding-top: 1px;
 }
 
+div#mapContainer button {
+    overflow: hidden;
+}
+
 div#mapContainer button:hover,
 div#mapContainer div.ol-control:hover {
 	cursor:pointer;

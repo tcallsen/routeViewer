@@ -106,7 +106,7 @@ class LayerControl extends Reflux.Component {
 	render () {
 		return (
 			<div id="layerControl" className="ol-unselectable ol-control custom-control">
-				<button id="layerControlButton"><img src='/static/img/ic_layers_white_24dp_2x.png'/></button>
+				<button id="layerControlButton"><img src={ (this.props.isVisible) ? '/static/img/ic_close_white_24dp_2x.png' : '/static/img/ic_layers_white_24dp_2x.png' }/></button>
 				<h5>Route Enrichment Data Layers</h5>
 				<div id="layerControlListContainer">
 					{ this.buildLayerListItems() }
