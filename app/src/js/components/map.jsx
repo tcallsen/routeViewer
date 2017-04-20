@@ -38,6 +38,8 @@ class Map extends Reflux.Component {
 		this.executeRoutingRequest = this.executeRoutingRequest.bind(this);
 		this.getHighlightedFeatureStyle = this.getHighlightedFeatureStyle.bind(this);
 		this.retrieveWmsMapLayers = this.retrieveWmsMapLayers.bind(this);
+		this.getWmsLayerDefinitionsFlat = this.getWmsLayerDefinitionsFlat.bind(this);
+		this.getWmsLayerDefinitionsByGuid = this.getWmsLayerDefinitionsByGuid.bind(this);
 
 	}
 
@@ -125,10 +127,13 @@ class Map extends Reflux.Component {
 	}
 
 	componentDidUpdate(prevProps, prevState) {
-		
-		//console.log('map componentDidUpdate');
 
 		//RECONCILE IF wmsMapLayers has been updated
+
+			//ensure wms layers have been loaded!
+	    	if (!this.state.map.wmsLayerDefinitions.children || !this.state.map.wmsLayerDefinitions.children.length) return;
+
+	    	//console.log('map componentDidUpdate');
 
 			var existingEnabled = [];
 			var existingDisabled = [];
@@ -138,8 +143,8 @@ class Map extends Reflux.Component {
 
 			var updateEnabled = [];
 			var updateDisabled = [];
-			Object.keys(this.state.map.wmsLayerDefinitions).forEach( layerDefinitionKey => {
-				var layerDefinition = this.state.map.wmsLayerDefinitions[layerDefinitionKey];
+			Object.keys(this.getWmsLayerDefinitionsFlat()).forEach( layerDefinitionKey => {
+				var layerDefinition = this.getWmsLayerDefinitionsByGuid(layerDefinitionKey);
 				if (layerDefinition.enabled) updateEnabled.push( layerDefinition.layer.get('guid') );
 				else updateDisabled.push( layerDefinition.layer.get('guid') );
 			});
@@ -165,6 +170,31 @@ class Map extends Reflux.Component {
 
 	}
 
+    getWmsLayerDefinitionsFlat() {
+        
+        var returnDefinitions= {};
+
+        var recurseWmsLayerDefinition = function ( wmsLayerDef ) {
+            returnDefinitions[ wmsLayerDef.name ] = wmsLayerDef;
+            wmsLayerDef.children.forEach( childWmsLayerDef => recurseWmsLayerDefinition(childWmsLayerDef) );
+        }
+
+        //recurse through chilren @ root
+        this.state.map.wmsLayerDefinitions.children.forEach( wmsLayerDef => recurseWmsLayerDefinition( wmsLayerDef ) );
+
+        return returnDefinitions;
+    }
+
+    getWmsLayerDefinitionsByGuid(wmsGuid) {
+    	var flatWmsLayers = this.getWmsLayerDefinitionsFlat();
+    	var layerNeedle = false;
+    	Object.values(flatWmsLayers).forEach( layerDefinition => {
+    		if (!!layerNeedle) return;
+    		if (layerDefinition.name === wmsGuid) layerNeedle = layerDefinition;
+    	});
+    	return layerNeedle;
+    }
+
 	retrieveWmsMapLayers() {
 
 		var DOMParser = global.DOMParser = require('xmldom').DOMParser;
@@ -177,31 +207,50 @@ class Map extends Reflux.Component {
 				var getCapabilitiesObj = new WMSCapabilities(res.text).toJSON();
 				var capabilityLayers = getCapabilitiesObj.Capability.Layer.Layer;
 
-				var assembledLayers = {};
+				var layersTree = {
+					isRoot: true,
+					enabled: false,
+					layer: null,
+					children: []
+				}
 
-				capabilityLayers.forEach( (layer,index) => {
+				capabilityLayers.forEach( layerNode => this.recurseWmsMapLayers(layersTree, layerNode) );
 
-					//assemble layer information into OL layer object
-					var olLayer = new ol.layer.Tile({
-						extent: [ layer.BoundingBox[0].extent[0] , layer.BoundingBox[0].extent[1] , layer.BoundingBox[0].extent[2] , layer.BoundingBox[0].extent[3] ],
-						source: new ol.source.TileWMS(({
-							url: 'http://costia.gritto.net:8880/geoserver/route/wms',
-							params: {'LAYERS': layer.Name, 'TILED': true},
-							serverType: 'geoserver'
-						})),
-						guid: layer.Name
-					});
+				console.log( 'recieved wms layers:', layersTree );
 
-					assembledLayers[layer.Name] = {
-						enabled: false,
-						layer: olLayer
-					};
-
-				});
-
-				Actions.updateMapWmsLayerDefinitions(assembledLayers);
+				Actions.updateMapWmsLayerDefinitions(layersTree);
 
 			});
+
+	}
+
+	recurseWmsMapLayers(parentNode, layerNode) {
+
+		//assemble layer information into OL layer object
+		var olLayer = new ol.layer.Tile({
+			extent: [ layerNode.BoundingBox[0].extent[0] , layerNode.BoundingBox[0].extent[1] , layerNode.BoundingBox[0].extent[2] , layerNode.BoundingBox[0].extent[3] ],
+			source: new ol.source.TileWMS(({
+				url: 'http://costia.gritto.net:8880/geoserver/route/wms',
+				params: {'LAYERS': layerNode.Name || layerNode.Title , 'TILED': true},
+				serverType: 'geoserver'
+			})),
+			guid: layerNode.Name || layerNode.Title,
+			children: []
+		});
+
+		var currentNewLayerNode = {
+			enabled: false,
+			name: layerNode.Name || layerNode.Title,
+			layer: olLayer,
+			children: []
+		};
+
+		//recurse into child layers
+		if (layerNode.Layer && layerNode.Layer.length > 0) {
+			layerNode.Layer.forEach( childLayerNode => this.recurseWmsMapLayers( currentNewLayerNode , childLayerNode ) );
+		}
+
+		parentNode.children.push( currentNewLayerNode );
 
 	}
 
@@ -387,10 +436,10 @@ class Map extends Reflux.Component {
 		}
 
 		// TEST - toggling of map layer
-		var layerKey = Object.keys(this.state.map.wmsLayerDefinitions)[ Math.floor(Math.random() *  Object.keys(this.state.map.wmsLayerDefinitions).length ) + 0   ];
+		var layerKey = Object.keys(this.getWmsLayerDefinitionsFlat())[ Math.floor(Math.random() *  Object.keys(this.state.map.wmsLayerDefinitions).length ) + 0   ];
 		console.log('toggling: ' + layerKey);
 		Actions.updateMapWmsLayerDefinitions({
-			enabled: !this.state.map.wmsLayerDefinitions[layerKey].enabled
+			enabled: !this.getWmsLayerDefinitionsByGuid(layerKey).enabled
 		}, layerKey);
 
 	}
@@ -466,8 +515,6 @@ class Map extends Reflux.Component {
 	}
 
 	render () {
-
-
 
 		return (
 
