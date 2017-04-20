@@ -39,6 +39,11 @@ class LayerControl extends Reflux.Component {
 
 	buildLayerListItems() {
 
+		var enabledLayers = []
+		Object.values(this.props.getWmsLayerDefinitionsFlat()).map( layerDefinition => {
+			if (layerDefinition.enabled) enabledLayers.push( layerDefinition.name );
+		});
+
 		var buildChildrenList = function( parentWmsLayerDef ) {
 
 			var childDefinitionElements = [];
@@ -47,7 +52,7 @@ class LayerControl extends Reflux.Component {
 
 				var childLayerElement = (
 					<li className="wmsLayerListItem" data-wmslayerguid={childLayerDefinition.name} key={childLayerDefinition.name}>
-						<input type="checkbox" />
+						<input type="checkbox" checked={ enabledLayers.indexOf( childLayerDefinition.name ) > -1 } />
 						<p>{childLayerDefinition.title}</p>
 						{ (childLayerDefinition.children.length > 0) ? buildChildrenList( childLayerDefinition ) : null }
 					</li>

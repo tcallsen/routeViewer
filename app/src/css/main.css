@@ -83,6 +83,12 @@ div#mapContainer div#layerControl p {
     padding: 0px;
 }
 
+div#mapContainer div#layerControl input[type=checkbox]:hover,
+div#mapContainer div#layerControl p:hover {
+    font-weight: bold;
+    cursor: pointer;
+}
+
 div#mapContainer div#layerControl ul.wmsLayerList {
     margin: 0;
     padding: 0 14px;

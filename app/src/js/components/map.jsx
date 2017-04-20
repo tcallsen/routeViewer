@@ -175,6 +175,9 @@ class Map extends Reflux.Component {
 
     getWmsLayerDefinitionsFlat() {
         
+    	//ensure wms layers have been loaded!
+    	if (!this.state.map || !this.state.map.wmsLayerDefinitions.children || !this.state.map.wmsLayerDefinitions.children.length) return {};
+
         var returnDefinitions= {};
 
         var recurseWmsLayerDefinition = function ( wmsLayerDef ) {
@@ -524,7 +527,8 @@ class Map extends Reflux.Component {
 					ref="layerControl" 
 					layerDefinitions={ (!!this.state.map) ? this.state.map.wmsLayerDefinitions : {} }
 					isVisible={ (!!this.state.map) ? this.state.map.layerControlVisible : false }
-					getWmsLayerDefinitionsByGuid={this.getWmsLayerDefinitionsByGuid} />
+					getWmsLayerDefinitionsByGuid={this.getWmsLayerDefinitionsByGuid}
+					getWmsLayerDefinitionsFlat={this.getWmsLayerDefinitionsFlat} />
 
 				<RouteControl 
 					ref="routeControl" 
