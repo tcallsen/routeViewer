@@ -325,14 +325,61 @@ class Map extends Reflux.Component {
 
 		if (feature.getGeometry().getType() === 'LineString') {
 			
-			baseStyle[0].setStroke(  
+			//check if special scoring exists on feature / road - if so highlight
 
-				new ol.style.Stroke({
-					color: 'rgb(253,141,1)',
-					width: 2.5
-				})
+			var containScoringPriotization = false;
+			this.state.config.roadScoringProperties.forEach( metricName => {
+				
+				if (containScoringPriotization) return;
+				
+				if ( metricName === 'score_highway') {
+					if ( feature.get( 'score_highway' ) === '1.0' ) containScoringPriotization = true;
+				}
+				else if ( typeof feature.get( metricName ) !== 'undefined' ) containScoringPriotization = true;
 
-			);
+				/* //debug
+				if ( typeof feature.get( metricName ) !== 'undefined' && metricName !== 'score_highway' ) {
+					console.log( metricName + " scoring encountered!" );
+				} */
+
+			});
+
+			if ( containScoringPriotization ) {
+
+				// SPECIAL highlighting - road has socring priorities
+				
+				var innerStyle = baseStyle[0];
+				innerStyle.setStroke(  
+					new ol.style.Stroke({
+						color: 'rgb(253,141,1)',
+						width: 2.5
+					})
+				);
+
+				var outerStyle = innerStyle.clone();
+				outerStyle.setStroke(  
+					new ol.style.Stroke({
+						color: '#4a9aff',
+						width: 7
+					})
+				);
+
+				baseStyle = [outerStyle, innerStyle];
+
+			} else {
+
+				// DEFAULT highlighting - nothing special about road
+				
+				baseStyle[0].setStroke(  
+
+					new ol.style.Stroke({
+						color: 'rgb(253,141,1)',
+						width: 2.5
+					})
+
+				);
+
+			}
 
 		} else if (feature.getGeometry().getType() === 'Point') {
 
@@ -359,8 +406,6 @@ class Map extends Reflux.Component {
 
 	handleRouteStoreUpdate(args) {
 		
-		console.log('handleRouteStoreUpdate', args);
-
 		if (args.type === 'newRoute') {
 
 			this.state.map.routesLayer.getSource().addFeatures( args.features );

@@ -30,7 +30,7 @@ class RouteStore extends Reflux.Store {
 
             this.onHighlightRoutes( [messageJson.routeSequence] )
 
-            console.log('newBestScore recieved: ' + messageJson.routeSequence);
+            //console.log('newBestScore recieved: ' + messageJson.routeSequence);
 
         });
 
