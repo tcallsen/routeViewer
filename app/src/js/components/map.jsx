@@ -458,7 +458,7 @@ class Map extends Reflux.Component {
 		//console.log(this.state.map.map.getView().getCenter(), this.state.map.map.getView().getZoom());
 		
 		// ROUTING
-		if (this.state.routing.active) {
+		if (this.state.routing.state === 'selecting') {
 
 			var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.map.getCoordinateFromPixel(event.pixel)) ) );
 
@@ -482,8 +482,8 @@ class Map extends Reflux.Component {
 	handleMapPointerMove(event) {
 
 		// ROUTING
-
-		if (this.state.routing.active) {
+		
+		if (this.state.routing.state === 'selecting') {
 
 			if (!this.state.routing.startCoord && !this.handleMapPointerMove.requestOut) {
 
@@ -539,6 +539,9 @@ class Map extends Reflux.Component {
 
 		}
 
+		//highlight road scoring
+		
+
 	}
 
 	to3857( target ) {
@@ -554,7 +557,7 @@ class Map extends Reflux.Component {
 		//derive mapContainer className
 		var className = "";
 		if (this.state.map.layerControlVisible)  className += 'layerControlVisible ';
-		if (this.state.routing.active) className += ' routingEnabled ';
+		if (this.state.routing.state === 'selecting') className += ' routingSelecting ';
 
 		return (
 

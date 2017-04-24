@@ -26,7 +26,7 @@ class AppStore extends Reflux.Store {
         this.state = {
             config: {},
             routing: {
-                active: false,
+                state: false,
                 startCoord: null,
                 endCoord: null,
                 percentComplete: -1
@@ -98,7 +98,7 @@ class AppStore extends Reflux.Store {
         this.state.map.context.clearRoutesLayer();
         this.setState({
             routing: {
-                active: false,
+                state: false,
                 startCoord: null,
                 endCoord: null,
                 percentComplete: -1
@@ -108,11 +108,11 @@ class AppStore extends Reflux.Store {
 
     onToggleRouting() {
 
-        if (this.state.routing.active) {
+        if (this.state.routing.state != false && this.state.routing.state != 'complete') {
 
             this.setState({
                 routing: {
-                    active: false,
+                    state: false,
                     startCoord: null,
                     endCoord: null,
                     percentComplete: -1
@@ -126,7 +126,7 @@ class AppStore extends Reflux.Store {
 
             this.setState({
                 routing: {
-                    active: true,
+                    state: 'selecting',
                     startCoord: null,
                     endCoord: null,
                     percentComplete: -1
@@ -142,7 +142,7 @@ class AppStore extends Reflux.Store {
     onSubmitRouting(routingRequest) {
         this.setState({
             routing: {
-                active: false,
+                state: 'routing',
                 startCoord: null,
                 endCoord: null,
                 percentComplete: 10
@@ -154,7 +154,7 @@ class AppStore extends Reflux.Store {
     onCompleteRouting() {
         this.setState({
             routing: {
-                active: false,
+                state: 'complete',
                 startCoord: null,
                 endCoord: null,
                 percentComplete: 100

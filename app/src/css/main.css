@@ -11,7 +11,7 @@ div#mapContainer {
 	position: fixed;
 }
 
-div#mapContainer.className {
+div#mapContainer.routingSelecting {
 	cursor: crosshair;
 }
 
