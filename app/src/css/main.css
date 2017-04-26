@@ -209,3 +209,43 @@ div#mapContainer div#routesListControl ul#routesList li.routesListItem p:hover {
     cursor: pointer;
     letter-spacing: 1px;
 }
+
+/* routing config settings modal content */
+div#routingConfigModalContent {
+
+}
+
+div#routingConfigModalContent h3 {
+    margin: 0 0 10px;
+}
+
+div#routingConfigModalContent button {
+    margin: 14px 0 0;
+}
+
+div#routingConfigModalContent div.routingConfigSliderContainer {
+
+}
+
+div#routingConfigModalContent div.routingConfigSliderContainer div.noUi-horizontal {
+    height: 10px;
+}
+
+div#routingConfigModalContent div.routingConfigSliderContainer div.noUi-handle.noUi-handle-lower {
+    width: 18px;
+    height: 18px;
+    left: -6px;
+    top: -5px;
+}
+
+div#routingConfigModalContent div.routingConfigSliderContainer div.noUi-handle.noUi-handle-lower:before {
+    left: 5px;
+    top: 5px;
+    height: 7px;
+}
+
+div#routingConfigModalContent div.routingConfigSliderContainer div.noUi-handle.noUi-handle-lower:after {
+    left: 11px;
+    top: 5px;
+    height: 7px;
+}
