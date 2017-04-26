@@ -11,6 +11,7 @@ import Actions from '../actions/actions.js';
 
 import LayerControl from '../components/layerControl.jsx';
 import RouteControl from '../components/routeControl.jsx';
+import SettingsControl from '../components/settingsControl.jsx';
 import RerunControl from '../components/rerunControl.jsx';
 import ClearControl from '../components/clearControl.jsx';
 import RoutesListControl from '../components/routesListControl.jsx';
@@ -103,6 +104,7 @@ class Map extends Reflux.Component {
 			controls: ol.control.defaults({ rotate: false }).extend([
 				this.refs.layerControl.control,
 				this.refs.routeControl.control,
+				this.refs.settingsControl.control,
 				this.refs.rerunControl.control,
 				this.refs.clearControl.control,
 				this.refs.routesListControl.control
@@ -600,6 +602,9 @@ class Map extends Reflux.Component {
 				<RouteControl 
 					ref="routeControl" 
 					routing={this.state.routing} />
+
+				<SettingsControl 
+					ref="settingsControl" />
 					
 				<RoutesListControl 
 					ref="routesListControl" />

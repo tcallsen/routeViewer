@@ -19,6 +19,7 @@ class AppStore extends Reflux.Store {
                 this.setState({
                     config: Object.assign( {} , this.state.config , res.body )
                 });
+                Actions.setRoutingConfigParameters( res.body.roadScoringProperties );
                 console.log( 'config loaded from backend:' , this.state.config );
             });
 

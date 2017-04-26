@@ -12,6 +12,9 @@ var Actions = Reflux.createActions([
 	'toggleMapControlVisibility',
 	'clearRoutes',
 
+	'toggleRoutingSettingsVisibility',
+	'setRoutingConfigParameters',
+
 	'highlightRoutes'
 
 ]);

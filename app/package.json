@@ -10,9 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "nouislider": "^9.2.0",
     "openlayers": "^3.20.1",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
+    "react-modal": "^1.7.7",
     "react-progress-bar-plus": "^1.2.0",
     "reflux": "^6.4.1",
     "socket.io-client": "^1.7.2",

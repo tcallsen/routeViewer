@@ -36,6 +36,11 @@ class RouteStore extends Reflux.Store {
 
         //set default app state
         this.state = {
+            routingConfig: {
+                modalVisible: false,
+                population: 550,
+                scoring: [ ]
+            },
             socket: socket,
             routes: {},
             highlightedRoutes: {}
@@ -105,6 +110,22 @@ class RouteStore extends Reflux.Store {
             type: 'highlightedRoutes',
             routes: highlightedRoutes
         });
+
+    }
+
+    onToggleRoutingSettingsVisibility() {
+
+        this.setState({
+            routingConfig: Object.assign( this.state.routingConfig , { modalVisible: !this.state.routingConfig.modalVisible } )
+        });
+
+    }
+
+    onSetRoutingConfigParameters(args) {
+
+        this.setState({
+            routingConfig: Object.assign( this.state.routingConfig , { scoring: args } )
+        })
 
     }
 

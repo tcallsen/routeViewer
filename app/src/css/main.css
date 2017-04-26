@@ -106,6 +106,13 @@ div#mapContainer div#routeControl {
     z-index: 100;
 }
 
+div#mapContainer div#settingsControl {
+    left: 2.7em;
+    bottom: .5em;
+    position: absolute;
+    z-index: 100;
+}
+
 div#mapContainer div#rerunControl {
     left: 2.7em;
     bottom: .5em;
