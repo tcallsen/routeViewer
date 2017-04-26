@@ -11,7 +11,7 @@ div#mapContainer {
 	position: fixed;
 }
 
-div#mapContainer.routingSelecting {
+div#mapContainer.routing-selecting {
 	cursor: crosshair;
 }
 
@@ -113,6 +113,12 @@ div#mapContainer div#settingsControl {
     z-index: 100;
 }
 
+/* hide settings control when routing complete */
+div#mapContainer.routing-selecting div#settingsControl,
+div#mapContainer.routing-routing div#settingsControl,
+div#mapContainer.routing-complete div#settingsControl {
+    display: none;
+}
 div#mapContainer div#rerunControl {
     left: 2.7em;
     bottom: .5em;

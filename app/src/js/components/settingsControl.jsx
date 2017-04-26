@@ -64,8 +64,6 @@ class SettingsControl extends Reflux.Component {
 
 		var sliderElements = [];
 
-		console.log(this.state);
-
 		this.state.routingConfig.scoring.forEach( scoringKey => {
 
 			sliderElements.push( <div className="routingConfigSlider" id={ "slider-" + scoringKey } key={ "slider-" + scoringKey } > </div> );

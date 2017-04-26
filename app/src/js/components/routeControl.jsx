@@ -38,7 +38,9 @@ class RouteControl extends Reflux.Component {
 	render () {
 		return (
 			<div id="routeControl" className="ol-unselectable ol-control custom-control">
-				<button><img src='/static/img/ic_directions_walk_black_24dp_2x.png'/></button>
+				<button>
+					<img src={ (this.props.routing.state === 'selecting') ? '/static/img/ic_close_white_24dp_2x.png' : '/static/img/ic_directions_walk_black_24dp_2x.png' }/>
+				</button>
 			</div>
 		);
 	}

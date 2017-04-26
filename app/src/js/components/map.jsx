@@ -583,7 +583,7 @@ class Map extends Reflux.Component {
 		//derive mapContainer className
 		var className = "";
 		if (this.state.map.layerControlVisible)  className += 'layerControlVisible ';
-		if (this.state.routing.state === 'selecting') className += ' routingSelecting ';
+		if (this.state.routing.state) className += 'routing-' + this.state.routing.state;
 
 		return (
 
