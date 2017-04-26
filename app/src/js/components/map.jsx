@@ -335,7 +335,7 @@ class Map extends Reflux.Component {
 			//check if special scoring exists on feature / road - if so highlight
 
 			var containScoringPriotization = false;
-			this.state.config.roadScoringProperties.forEach( metricName => {
+			Object.keys(this.state.config.roadScoringProperties).forEach( metricName => {
 				
 				if (containScoringPriotization) return;
 				
@@ -555,7 +555,7 @@ class Map extends Reflux.Component {
 				
 				if ( layer.get('name') !== 'highlightedRoutesLayer' ) return;
 				
-				this.state.config.roadScoringProperties.forEach( metricName => {
+				Object.keys(this.state.config.roadScoringProperties).forEach( metricName => {
 					
 					if ( typeof feature.get( metricName ) !== 'undefined' && feature.get( metricName ) !== 0 ) {
 						console.log( metricName + ":  " + feature.get( metricName ) );

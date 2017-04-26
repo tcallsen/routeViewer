@@ -39,7 +39,7 @@ class RouteStore extends Reflux.Store {
             routingConfig: {
                 modalVisible: false,
                 population: 550,
-                scoring: [ ]
+                scoring: { }
             },
             socket: socket,
             routes: {},
