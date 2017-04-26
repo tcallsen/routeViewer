@@ -43,6 +43,7 @@ class Map extends Reflux.Component {
 	componentDidMount() {
 
 		var routesLayer = new ol.layer.Vector({
+			name: 'routesLayer',
 			//style: this.getFeatureStyle,
 			source: new ol.source.Vector({
 				features:[],
@@ -51,6 +52,7 @@ class Map extends Reflux.Component {
 		});
 
 		var highlightedRoutesLayer = new ol.layer.Vector({
+			name: 'highlightedRoutesLayer',
 			style: this.getFeatureStyle,
 			source: new ol.source.Vector({
 				features:[],
@@ -59,6 +61,7 @@ class Map extends Reflux.Component {
 		});
 
 		var snapToLayer = new ol.layer.Vector({
+			name: 'snapToLayer',
 			source: new ol.source.Vector({
 				features:[],
 				wrapX: false
@@ -260,6 +263,7 @@ class Map extends Reflux.Component {
 			this.state.map.map.removeLayer( this.state.map.routesLayer );
 
 			this.state.map.routesLayer = new ol.layer.Vector({
+				name: 'routesLayer',
 				//style: this.getFeatureStyle,
 				source: new ol.source.Vector({
 					features:[],
@@ -278,6 +282,7 @@ class Map extends Reflux.Component {
 			this.state.map.map.removeLayer( this.state.map.highlightedRoutesLayer );
 
 			this.state.map.highlightedRoutesLayer = new ol.layer.Vector({
+				name: 'highlightedRoutesLayer',
 				style: this.getHighlightedFeatureStyle,
 				source: new ol.source.Vector({
 					features:[],
@@ -332,10 +337,12 @@ class Map extends Reflux.Component {
 				
 				if (containScoringPriotization) return;
 				
-				if ( metricName === 'score_highway') {
+				/* if ( metricName === 'score_highway') {
 					if ( feature.get( 'score_highway' ) === '1.0' ) containScoringPriotization = true;
 				}
-				else if ( typeof feature.get( metricName ) !== 'undefined' ) containScoringPriotization = true;
+				else */
+
+				if ( typeof feature.get( metricName ) !== 'undefined' && feature.get( metricName ) !== 0 ) containScoringPriotization = true;
 
 				/* //debug
 				if ( typeof feature.get( metricName ) !== 'undefined' && metricName !== 'score_highway' ) {
@@ -540,6 +547,23 @@ class Map extends Reflux.Component {
 		}
 
 		//highlight road scoring
+		if (this.state.routing.state === 'routing' || this.state.routing.state === 'complete') {
+
+			this.state.map.map.forEachFeatureAtPixel(event.pixel, (feature, layer) => {
+				
+				if ( layer.get('name') !== 'highlightedRoutesLayer' ) return;
+				
+				this.state.config.roadScoringProperties.forEach( metricName => {
+					
+					if ( typeof feature.get( metricName ) !== 'undefined' && feature.get( metricName ) !== 0 ) {
+						console.log( metricName + ":  " + feature.get( metricName ) );
+					}
+
+				});
+
+			});
+
+		}
 		
 
 	}
