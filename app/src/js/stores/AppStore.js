@@ -30,6 +30,7 @@ class AppStore extends Reflux.Store {
                 state: false,
                 startCoord: null,
                 endCoord: null,
+                backendStatus: null,
                 percentComplete: -1
             },
             map: {
@@ -115,6 +116,7 @@ class AppStore extends Reflux.Store {
                     state: false,
                     startCoord: null,
                     endCoord: null,
+                    backendStatus: null,
                     percentComplete: -1
                 }
             });
@@ -129,6 +131,7 @@ class AppStore extends Reflux.Store {
                     state: 'selecting',
                     startCoord: null,
                     endCoord: null,
+                    backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
                     percentComplete: -1
                 }
             });
@@ -145,6 +148,7 @@ class AppStore extends Reflux.Store {
                 state: 'routing',
                 startCoord: null,
                 endCoord: null,
+                backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
                 percentComplete: 10
             }
         });
@@ -163,9 +167,30 @@ class AppStore extends Reflux.Store {
                 state: 'complete',
                 startCoord: null,
                 endCoord: null,
+                backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
                 percentComplete: 100
             }
         });
+    }
+
+    onUpdateRoutingBackendStatus(routingStatus) {
+
+        //confirm this message is most current, otherwise omit
+        /* if (!!this.state.routing.backendStatus) { //sometimes reached before backendStatus has been saved
+            var messageDate;
+            if (routingStatus.time) {
+                messageDate = new Date( routingStatus.time );
+            }
+            if (!!messageDate && this.state.routing.backendStatus.time && messageDate < this.state.routing.backendStatus.time) {
+                console.log('dropping old message', routingStatus);
+                return;
+            } else routingStatus.time = messageDate;
+        } */
+
+        this.setState({
+            routing: Object.assign( this.state.routing , { backendStatus: routingStatus } )
+        });
+
     }
 
 }

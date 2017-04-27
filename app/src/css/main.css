@@ -293,3 +293,28 @@ div#routingConfigModalContent div.routingConfigSliderContainer div.routingConfig
 div#routingConfigModalContent div.routingConfigSliderContainer input.routingConfigInput {
     width: 40px;
 }
+
+/* status label styles */
+div#statusLabelContainer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    background-color: rgba(255,255,255,0.7);
+    padding: 17px 0 17px 0;
+    border-bottom-left-radius: 4px;
+    display: none;
+}
+
+div#mapContainerParent.routing-routing div#statusLabelContainer,
+div#mapContainerParent.routing-complete div#statusLabelContainer {
+    display: block;
+}
+
+div#statusLabelContainer div#statusLabel {
+   margin: 0 44px 0 14px;
+   text-align: right;
+}
+
+div#statusLabelContainer div#statusLabel h5 {
+    margin: 0;
+}

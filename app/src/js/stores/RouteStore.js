@@ -75,11 +75,7 @@ class RouteStore extends Reflux.Store {
     }
 
     processNewStatus(status) {
-
-        var message = JSON.parse(status);
-
-        console.log('newStatus', status);
-
+        Actions.updateRoutingBackendStatus( JSON.parse(status) );
     }
 
     processNewRoute(route) {

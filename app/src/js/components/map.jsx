@@ -15,6 +15,7 @@ import SettingsControl from '../components/settingsControl.jsx';
 import RerunControl from '../components/rerunControl.jsx';
 import ClearControl from '../components/clearControl.jsx';
 import RoutesListControl from '../components/routesListControl.jsx';
+import StatusLabel from './statusLabel.jsx';
 
 //open layers and styles
 var ol = require('openlayers');
@@ -562,12 +563,13 @@ class Map extends Reflux.Component {
 		if (this.state.map.layerControlVisible)  className += 'layerControlVisible ';
 		if (this.state.routing.state) className += 'routing-' + this.state.routing.state;
 
-
 		return (
 
 			<div id="mapContainerParent" className={ className }>
 
 				<div ref="mapContainer" id="mapContainer"> </div>
+
+				<StatusLabel />
 
 				<LayerControl
 					ref="layerControl" 
