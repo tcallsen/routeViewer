@@ -26,6 +26,7 @@ class RouteStore extends Reflux.Store {
         socket.on( 'routestart' , this.processRouteStart.bind(this) );
         socket.on( 'routeend' , this.processRouteEnd.bind(this) );
         socket.on( 'newRoute' , this.processNewRoute.bind(this) );
+        socket.on( 'newStatus' , this.processNewStatus.bind(this) );
         socket.on( 'newBestScore' , (message) => {
 
             var messageJson = JSON.parse(message);
@@ -70,6 +71,14 @@ class RouteStore extends Reflux.Store {
             requestGuid: requestGuid,
             routes: this.state.routes
         });
+
+    }
+
+    processNewStatus(status) {
+
+        var message = JSON.parse(status);
+
+        console.log('newStatus', status);
 
     }
 

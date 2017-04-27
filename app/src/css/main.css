@@ -11,7 +11,7 @@ div#mapContainer {
 	position: fixed;
 }
 
-div#mapContainer.routing-selecting {
+div#mapContainerParent.routing-selecting {
 	cursor: crosshair;
 }
 
@@ -35,7 +35,7 @@ div#mapContainer div#layerControl:hover {
     background-color: rgba(255,255,255,0.85);
 }
 
-div#mapContainer.layerControlVisible div#layerControl {
+div#mapContainerParent.layerControlVisible div#layerControl {
     width: 250px;
     height: 248px;
 }
@@ -63,7 +63,7 @@ div#mapContainer div#layerControl div#layerControlListContainer {
     overflow-y: auto;
 }
 
-div#mapContainer.layerControlVisible div#layerControl div#layerControlListContainer {
+div#mapContainerParent.layerControlVisible div#layerControl div#layerControlListContainer {
     display: block;
 }
 
@@ -134,9 +134,9 @@ div#routingConfigModalContent div#settingsCloseControl button:hover {
 
 /* hide settings control when routing complete */
 body.ReactModal__Body--open div#settingsControl,
-div#mapContainer.routing-selecting div#settingsControl,
-div#mapContainer.routing-routing div#settingsControl,
-div#mapContainer.routing-routing div#routeControl {
+div#mapContainerParent.routing-selecting div#settingsControl,
+div#mapContainerParent.routing-routing div#settingsControl,
+div#mapContainerParent.routing-routing div#routeControl {
     display: none;
 }
 div#mapContainer div#rerunControl {

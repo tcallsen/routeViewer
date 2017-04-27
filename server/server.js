@@ -89,10 +89,17 @@ function checkForRoutes() {
 			});
 		}
 
-		//prase and send foward new score updates
+		//prase and send forward new score updates
 		else if (messageObject.type === 'newBestScore') {
 			Object.keys(io.sockets.connected).forEach( socketKey => {
 				io.sockets.connected[socketKey].emit('newBestScore', item[1] );
+			});
+		}
+
+		//prase and send forward new status updates
+		else if (messageObject.type === 'newStatus') {
+			Object.keys(io.sockets.connected).forEach( socketKey => {
+				io.sockets.connected[socketKey].emit('newStatus', item[1] );
 			});
 		}
 
