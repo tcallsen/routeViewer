@@ -315,6 +315,10 @@ div#statusLabelContainer div#statusLabel {
    text-align: right;
 }
 
+div#mapContainerParent.routing-complete div#statusLabel {
+    transition: margin-right 1.15s ease-in;
+    margin: 0 14px;
+}
 div#statusLabelContainer div#statusLabel h5 {
     margin: 0;
 }
