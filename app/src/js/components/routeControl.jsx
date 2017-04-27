@@ -17,7 +17,7 @@ class RouteControl extends Reflux.Component {
 		//routing values available in this.props.routing
 
 		// This binding is necessary to make `this` work in the callback
-    	this.toggleRouting = this.toggleRouting.bind(this);
+    	this.toggleRoutingUI = this.toggleRoutingUI.bind(this);
 
 	}
 
@@ -27,12 +27,12 @@ class RouteControl extends Reflux.Component {
 		    element: ReactDOM.findDOMNode(this)
 		});
 
-		document.getElementById('routeControl').addEventListener("click", this.toggleRouting.bind(this));
+		document.getElementById('routeControl').addEventListener("click", this.toggleRoutingUI.bind(this));
 
 	}	
 
-	toggleRouting() {
-		Actions.toggleRouting();
+	toggleRoutingUI() {
+		Actions.toggleRoutingUI();
 	}
 
 	render () {

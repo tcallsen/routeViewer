@@ -32,7 +32,6 @@ class AppStore extends Reflux.Store {
                 endCoord: null,
                 percentComplete: -1
             },
-            previousRoutingRequest: null,
             map: {
                 wmsLayerDefinitions: []
             }
@@ -107,7 +106,7 @@ class AppStore extends Reflux.Store {
         });
     }
 
-    onToggleRouting() {
+    onToggleRoutingUI() {
 
         if (this.state.routing.state != false && this.state.routing.state != 'complete') {
 
@@ -140,19 +139,22 @@ class AppStore extends Reflux.Store {
 
     }
 
-    onSubmitRouting(routingRequest) {
+    onSubmitRoutingUI() {
         this.setState({
             routing: {
                 state: 'routing',
                 startCoord: null,
                 endCoord: null,
                 percentComplete: 10
-            },
-            previousRoutingRequest: routingRequest
+            }
         });
     }
 
-    onCompleteRouting() {
+    onRerunPreviousRoutingRequest() {
+        this.onSubmitRoutingUI();
+    }
+
+    onCompleteRoutingUI() {
         
         this.state.map.snapToLayer.getSource().clear();
 
@@ -164,10 +166,6 @@ class AppStore extends Reflux.Store {
                 percentComplete: 100
             }
         });
-    }
-
-    onRerunPreviousRoutingRequest() {
-        this.state.map.context.executeRoutingRequest( this.state.previousRoutingRequest );
     }
 
 }

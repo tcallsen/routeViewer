@@ -40,9 +40,9 @@ class RouteStore extends Reflux.Store {
         this.state = {
             routingConfig: {
                 modalVisible: false,
-                population: 550,
                 scoring: { }
             },
+            previousRoutingRequest: null,
             socket: socket,
             routes: {},
             highlightedRoutes: {}
@@ -87,7 +87,7 @@ class RouteStore extends Reflux.Store {
                 features: routeFeatures,
                 json: route
             };
-        } else console.log( 'omitting spindles from routesStore' );
+        }
 
         // trigger recieved route down to components
         this.trigger({
@@ -154,11 +154,27 @@ class RouteStore extends Reflux.Store {
 
     }
 
+    onSubmitRoutingUI(routingRequestBody, endpointAddition, callback) {
+        this.setState({
+            previousRoutingRequest: {
+                routingRequestBody: routingRequestBody,
+                endpointAddition: endpointAddition,
+                callback: callback
+            }
+        });
+    }
+
+    onRerunPreviousRoutingRequest() {
+        this.onExecuteRoutingRequest( this.state.previousRoutingRequest.routingRequestBody , this.state.previousRoutingRequest.endpointAddition , this.state.previousRoutingRequest.callback );
+    }
 
     onExecuteRoutingRequest(routingRequestBody, endpointAddition, callback) {
 
         //derive routing REST endpoint from webappConfig
         var routingRestEndpointUrl = AppStore.state.config.routingRestEndpoint.protocol + '://' + AppStore.state.config.routingRestEndpoint.host + ':' + AppStore.state.config.routingRestEndpoint.port + '/' + AppStore.state.config.routingRestEndpoint.path + endpointAddition;
+
+        //append routingConfig to routingRequestBody
+        routingRequestBody = Object.assign( routingRequestBody , { routingConfig : this.state.routingConfig.scoring } );
 
         request.post( routingRestEndpointUrl )
             .send( routingRequestBody )

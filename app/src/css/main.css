@@ -116,18 +116,18 @@ div#mapContainer div#settingsControl {
 /* hide settings control when routing complete */
 div#mapContainer.routing-selecting div#settingsControl,
 div#mapContainer.routing-routing div#settingsControl,
-div#mapContainer.routing-complete div#settingsControl {
+div#mapContainer.routing-routing div#routeControl {
     display: none;
 }
 div#mapContainer div#rerunControl {
-    left: 2.7em;
+    left: 4.95em;
     bottom: .5em;
     position: absolute;
     z-index: 100;
 }
 
 div#mapContainer div#clearControl {
-	left: 4.95em;
+	left: 7.2em;
     bottom: .5em;
     position: absolute;
     z-index: 100;

@@ -3,9 +3,9 @@ import Reflux from 'reflux';
 var Actions = Reflux.createActions([
 	
 	'executeRoutingRequest',
-	'toggleRouting',
-	'submitRouting',
-	'completeRouting',
+	'toggleRoutingUI',
+	'submitRoutingUI',
+	'completeRoutingUI',
 	'rerunPreviousRoutingRequest',
 
 	'setMapState',
