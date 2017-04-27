@@ -38,6 +38,23 @@ class SettingsControl extends Reflux.Component {
 
 	}	
 
+	componentDidUpdate(prevProps, prevState) {
+		
+		Object.keys(this.state.routingConfig.scoring).forEach( metricName => {
+
+			if (!this.state.sliders[metricName]) return;
+
+			var metricDefinition = this.state.routingConfig.scoring[metricName];
+			var sliderDefinition = this.state.sliders[metricName];
+
+			if (metricDefinition.value !== sliderDefinition.noUiSlider.get() / 100 ) {
+				sliderDefinition.noUiSlider.set( metricDefinition.value * 100 );
+			}
+
+		});
+
+	}
+
 	afterOpenFn() {
 		
 		console.log(this);
@@ -51,21 +68,38 @@ class SettingsControl extends Reflux.Component {
 			sliders[metricName] = ReactDOM.findDOMNode( this.refs[ 'slider-' + metricName ] );
     
 			noUiSlider.create( sliders[metricName], {
-				start: metricDefinition.default,
+				start: metricDefinition.value * 100,
 				range: {
-					min: metricDefinition.range[0],
-					max: metricDefinition.range[1]
+					min: metricDefinition.range[0] * 100,
+					max: metricDefinition.range[1] * 100
 				}
 			});
 
+			sliders[metricName].noUiSlider.on('change', function( values, handle ) {
+				var value = Math.round(values[handle]);
+				Actions.updateRouteScoringMetricValue({
+					metricName: metricName,
+					newValue: value
+				});
+			});
+
+		});
+
+		this.setState({
+			sliders: sliders
 		});
 
 	}
 
 	toggleModalVisibility() {
-		
 		Actions.toggleRoutingSettingsVisibility();
+	}
 
+	handleSliderChange(event, sliderId) {
+		Actions.updateRouteScoringMetricValue({
+			metricName: sliderId,
+			newValue: event.target.value
+		});
 	}
 
 	buildConfigOptions() {
@@ -74,15 +108,21 @@ class SettingsControl extends Reflux.Component {
 
 		Object.keys(this.state.routingConfig.scoring).forEach( metricName => {
 				
+			var metricDefinition = this.state.routingConfig.scoring[metricName];
+
 			var prettyTitle = metricName.replace('score_','');
 			prettyTitle = prettyTitle.charAt(0).toUpperCase() + prettyTitle.slice(1);
 
 			sliderElements.push( 
 				<div className="routingConfigSliderContainer" key={ "slider-" + metricName }>
 					<label className="routingConfigSliderLabel">{prettyTitle}</label>
-					<div className="routingConfigSlider" ref={ "slider-" + metricName } id={ "slider-" + metricName } > </div> 
+					<input className="routingConfigInput" type="number" onChange={ (event) => this.handleSliderChange( event, metricName ) } value={ metricDefinition.value * 100 }/>
+					<div className="routingConfigSliderParent" >
+						<div className="routingConfigSlider" ref={ "slider-" + metricName } id={ "slider-" + metricName } > </div> 
+					</div>
 				</div>
 			);
+
 		});
 
 		return (
@@ -136,7 +176,7 @@ class SettingsControl extends Reflux.Component {
 							
 							{ this.buildConfigOptions() }
 
-							<button onClick={this.toggleModalVisibility}>Close Modal...</button>
+							<button onClick={this.toggleModalVisibility}>Save & Close</button>
 					
 						</div>
 

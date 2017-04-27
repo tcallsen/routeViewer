@@ -217,6 +217,7 @@ div#routingConfigModalContent {
 
 div#routingConfigModalContent h3 {
     margin: 0 0 10px;
+    font-size: 16px;
 }
 
 div#routingConfigModalContent button {
@@ -248,4 +249,27 @@ div#routingConfigModalContent div.routingConfigSliderContainer div.noUi-handle.n
     left: 11px;
     top: 5px;
     height: 7px;
+}
+
+div#routingConfigModalContent div.routingConfigSliderContainer > * {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 4px;
+}
+
+div#routingConfigModalContent div.routingConfigSliderContainer > *:first-child {
+    margin: 0 4pc 0 0;
+}
+
+div#routingConfigModalContent div.routingConfigSliderContainer label.routingConfigSliderLabel {
+    width: 36px;
+    font-size: 14px;
+}
+
+div#routingConfigModalContent div.routingConfigSliderContainer div.routingConfigSliderParent {
+    width: 130px;
+}
+
+div#routingConfigModalContent div.routingConfigSliderContainer input.routingConfigInput {
+    width: 30px;
 }

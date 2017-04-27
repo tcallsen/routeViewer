@@ -14,6 +14,7 @@ var Actions = Reflux.createActions([
 
 	'toggleRoutingSettingsVisibility',
 	'setRoutingConfigParameters',
+	'updateRouteScoringMetricValue',
 
 	'highlightRoutes'
 

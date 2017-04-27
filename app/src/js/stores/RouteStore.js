@@ -121,11 +121,33 @@ class RouteStore extends Reflux.Store {
 
     }
 
-    onSetRoutingConfigParameters(args) {
+    onSetRoutingConfigParameters(scoringMetrics) {
+
+        //add value property to each scoringMetric
+        Object.values(scoringMetrics).forEach( metricDefinition => {
+            metricDefinition.value = metricDefinition.default;
+        });
 
         this.setState({
-            routingConfig: Object.assign( this.state.routingConfig , { scoring: args } )
-        })
+            routingConfig: Object.assign( this.state.routingConfig , { scoring: scoringMetrics } )
+        });
+
+    }
+
+    onUpdateRouteScoringMetricValue(args) {
+
+        var newScoringObject = this.state.routingConfig.scoring;
+
+        //confirm change is valid
+        var metricDefinition = newScoringObject[args.metricName];
+        var proposedValue = args.newValue / 100;
+        if ( isNaN(proposedValue) || proposedValue > metricDefinition.range[1] || proposedValue < metricDefinition.range[0] ) return;
+        
+        //update model & ui
+        metricDefinition.value = proposedValue;
+        this.setState({
+            routingConfig: Object.assign( this.state.routingConfig , { scoring: newScoringObject } )
+        });
 
     }
 
