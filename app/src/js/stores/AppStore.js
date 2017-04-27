@@ -153,6 +153,9 @@ class AppStore extends Reflux.Store {
     }
 
     onCompleteRouting() {
+        
+        this.state.map.snapToLayer.getSource().clear();
+
         this.setState({
             routing: {
                 state: 'complete',

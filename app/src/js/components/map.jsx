@@ -33,7 +33,6 @@ class Map extends Reflux.Component {
 
 		this.clearRoutesLayer = this.clearRoutesLayer.bind(this);
 		this.getFeatureStyle = this.getFeatureStyle.bind(this);
-		this.executeRoutingRequest = this.executeRoutingRequest.bind(this);
 		this.getHighlightedFeatureStyle = this.getHighlightedFeatureStyle.bind(this);
 		this.retrieveWmsMapLayers = this.retrieveWmsMapLayers.bind(this);
 		this.getWmsLayerDefinitionsFlat = this.getWmsLayerDefinitionsFlat.bind(this);
@@ -442,26 +441,6 @@ class Map extends Reflux.Component {
 
 	}
 
-	executeRoutingRequest(routingRequestBody) {
-
-		//derive routing REST endpoint from webappConfig
-		var routingRestEndpointUrl = this.state.config.routingRestEndpoint.protocol + '://' + this.state.config.routingRestEndpoint.host + ':' + this.state.config.routingRestEndpoint.port + '/' + this.state.config.routingRestEndpoint.path + '/getRoutesRandom/';
-
-		request.post( routingRestEndpointUrl )
-			.send( routingRequestBody )
-			.set('Accept', 'application/json')
-			.end( (err, res) => {
-	
-				//complete routing sequence
-				Actions.completeRouting();
-				this.state.map.snapToLayer.getSource().clear();				
-
-			});
-
-		Actions.submitRouting( routingRequestBody );
-
-	}
-
 	handleMapClick(event) {
 
 		//console.log(this.state.map.map.getView().getCenter(), this.state.map.map.getView().getZoom());
@@ -478,7 +457,12 @@ class Map extends Reflux.Component {
 
 				var routingRequestBody = Object.assign( {}, this.state.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() } );
 
-				this.executeRoutingRequest( routingRequestBody );
+				Actions.executeRoutingRequest( routingRequestBody , '/getRoutesRandom/' , function(err,res) {
+					//complete routing sequence
+                	Actions.completeRouting();
+				}.bind(this) );
+
+				Actions.submitRouting( routingRequestBody );
 
 			}
 
@@ -497,52 +481,38 @@ class Map extends Reflux.Component {
 			if (!this.state.routing.startCoord && !this.handleMapPointerMove.requestOut) {
 
 				this.handleMapPointerMove.requestOut = true;
-
 				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.map.getCoordinateFromPixel(event.pixel)) ) );
+				var routingRequestBody = {startCoord: hoveredPointWkt };
 
-				//derive routing REST endpoint from webappConfig
-				var routingRestEndpointUrl = this.state.config.routingRestEndpoint.protocol + '://' + this.state.config.routingRestEndpoint.host + ':' + this.state.config.routingRestEndpoint.port + '/' + this.state.config.routingRestEndpoint.path + '/getClosestPoint/';
+				Actions.executeRoutingRequest( routingRequestBody , '/getClosestPoint/' , function(err,res) {
+					
+					this.handleMapPointerMove.requestOut = false;
 
-				request.post( routingRestEndpointUrl )
-					.send({
-						startCoord: hoveredPointWkt
-					})
-					.set('Accept', 'application/json')
-					.end( (err, res) => {
+					var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
 
-						this.handleMapPointerMove.requestOut = false;
+					var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
+					this.state.map.snapToLayer.getSource().clear();
+					this.state.map.snapToLayer.getSource().addFeatures( routeFeatures ); 
 
-						var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
-
-						var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
-						this.state.map.snapToLayer.getSource().clear();
-						this.state.map.snapToLayer.getSource().addFeatures( routeFeatures ); 
-
-					});
+				}.bind(this) );
 
 			} else if (!this.handleMapPointerMove.requestOut) {
 
 				this.handleMapPointerMove.requestOut = true;
-
 				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.map.getCoordinateFromPixel(event.pixel)) ) );
+				var routingRequestBody = Object.assign( {}, this.state.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() , endCoord: hoveredPointWkt } );
 
-				//derive routing REST endpoint from webappConfig
-				var routingRestEndpointUrl = this.state.config.routingRestEndpoint.protocol + '://' + this.state.config.routingRestEndpoint.host + ':' + this.state.config.routingRestEndpoint.port + '/' + this.state.config.routingRestEndpoint.path + '/getRoute/';
+				Actions.executeRoutingRequest( routingRequestBody , '/getRoute/' , function(err,res) {
+					
+					this.handleMapPointerMove.requestOut = false;
 
-				request.post( routingRestEndpointUrl )
-					.send( Object.assign( {}, this.state.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() , endCoord: hoveredPointWkt } ) )
-					.set('Accept', 'application/json')
-					.end( (err, res) => {
+					var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
 
-						this.handleMapPointerMove.requestOut = false;
+					var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
+					this.state.map.snapToLayer.getSource().clear();
+					this.state.map.snapToLayer.getSource().addFeatures( routeFeatures ); 
 
-						var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
-
-						var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
-						this.state.map.snapToLayer.getSource().clear();
-						this.state.map.snapToLayer.getSource().addFeatures( routeFeatures ); 
-
-					});
+				}.bind(this) );
 
 			}
 

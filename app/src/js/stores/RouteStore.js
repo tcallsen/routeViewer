@@ -4,6 +4,8 @@ import request from 'superagent';
 import io from 'socket.io-client';
 import ol from 'openlayers';
 
+import AppStore from './AppStore.js';
+
 import Actions from '../actions/actions.js';
 
 class RouteStore extends Reflux.Store {
@@ -149,6 +151,21 @@ class RouteStore extends Reflux.Store {
         this.setState({
             routingConfig: Object.assign( this.state.routingConfig , { scoring: newScoringObject } )
         });
+
+    }
+
+
+    onExecuteRoutingRequest(routingRequestBody, endpointAddition, callback) {
+
+        //derive routing REST endpoint from webappConfig
+        var routingRestEndpointUrl = AppStore.state.config.routingRestEndpoint.protocol + '://' + AppStore.state.config.routingRestEndpoint.host + ':' + AppStore.state.config.routingRestEndpoint.port + '/' + AppStore.state.config.routingRestEndpoint.path + endpointAddition;
+
+        request.post( routingRestEndpointUrl )
+            .send( routingRequestBody )
+            .set('Accept', 'application/json')
+            .end( (err, res) => {
+                callback(err, res);
+            });
 
     }
 
