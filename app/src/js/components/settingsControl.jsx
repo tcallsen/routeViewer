@@ -160,7 +160,7 @@ class SettingsControl extends Reflux.Component {
 			    bottom                     : '44px',
 			    border                     : '1px solid rgb(204,204,204)',
 			    background                 : '#fff',
-			    overflow                   : 'auto',
+			    overflow                   : 'visible',
 			    WebkitOverflowScrolling    : 'touch',
 			    borderRadius               : '4px',
 			    outline                    : 'none',
@@ -192,8 +192,10 @@ class SettingsControl extends Reflux.Component {
 							
 							{ this.buildConfigOptions() }
 
-							<button onClick={this.toggleModalVisibility}>Save & Close</button>
-					
+							<div id="settingsCloseControl" className="ol-unselectable ol-control custom-control" onClick={this.toggleModalVisibility}>
+								<button><img src='/static/img/ic_close_white_24dp_2x.png'/></button>
+							</div>
+
 						</div>
 
 					</Modal>
