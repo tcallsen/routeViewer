@@ -63,8 +63,6 @@ class SettingsControl extends Reflux.Component {
 	}
 
 	afterOpenFn() {
-		
-		console.log(this);
 
 		var sliders = {};
 
