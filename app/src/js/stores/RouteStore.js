@@ -140,7 +140,8 @@ class RouteStore extends Reflux.Store {
 
         //confirm change is valid
         var metricDefinition = newScoringObject[args.metricName];
-        var proposedValue = args.newValue / 100;
+        var proposedValue = (typeof metricDefinition.uiScale !== 'undefined') ? args.newValue / metricDefinition.uiScale : args.newValue / 100 ;
+        
         if ( isNaN(proposedValue) || proposedValue > metricDefinition.range[1] || proposedValue < metricDefinition.range[0] ) return;
         
         //update model & ui

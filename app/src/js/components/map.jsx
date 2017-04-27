@@ -557,6 +557,11 @@ class Map extends Reflux.Component {
 				
 				Object.keys(this.state.config.roadScoringProperties).forEach( metricName => {
 					
+					var metricDefinition = this.state.config.roadScoringProperties[metricName];
+
+					//skip non score metrics (e.g. population size)
+					if ( typeof metricDefinition.isScore !== 'undefined' && !metricDefinition.isScore ) return;
+
 					if ( typeof feature.get( metricName ) !== 'undefined' && feature.get( metricName ) !== 0 ) {
 						console.log( metricName + ":  " + feature.get( metricName ) );
 					}

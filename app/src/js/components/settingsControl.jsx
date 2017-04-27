@@ -47,8 +47,15 @@ class SettingsControl extends Reflux.Component {
 			var metricDefinition = this.state.routingConfig.scoring[metricName];
 			var sliderDefinition = this.state.sliders[metricName];
 
-			if (metricDefinition.value !== sliderDefinition.noUiSlider.get() / 100 ) {
-				sliderDefinition.noUiSlider.set( metricDefinition.value * 100 );
+			//apply scale if necessary
+			if (typeof metricDefinition.uiScale !== 'undefined') {
+				if (metricDefinition.value !== sliderDefinition.noUiSlider.get() / metricDefinition.uiScale ) {
+					sliderDefinition.noUiSlider.set( metricDefinition.value * metricDefinition.uiScale );
+				}
+			} else { //default of 100
+				if (metricDefinition.value !== sliderDefinition.noUiSlider.get() / 100 ) {
+					sliderDefinition.noUiSlider.set( metricDefinition.value * 100 );
+				}
 			}
 
 		});
@@ -67,13 +74,24 @@ class SettingsControl extends Reflux.Component {
 
 			sliders[metricName] = ReactDOM.findDOMNode( this.refs[ 'slider-' + metricName ] );
     
-			noUiSlider.create( sliders[metricName], {
-				start: metricDefinition.value * 100,
-				range: {
-					min: metricDefinition.range[0] * 100,
-					max: metricDefinition.range[1] * 100
-				}
-			});
+			//create slider with scale if necessary
+			if (typeof metricDefinition.uiScale !== 'undefined') {
+				noUiSlider.create( sliders[metricName], {
+					start: metricDefinition.value * metricDefinition.uiScale,
+					range: {
+						min: metricDefinition.range[0] * metricDefinition.uiScale,
+						max: metricDefinition.range[1] * metricDefinition.uiScale
+					}
+				});
+			} else {
+				noUiSlider.create( sliders[metricName], {
+					start: metricDefinition.value * 100,
+					range: {
+						min: metricDefinition.range[0] * 100,
+						max: metricDefinition.range[1] * 100
+					}
+				});
+			}
 
 			sliders[metricName].noUiSlider.on('change', function( values, handle ) {
 				var value = Math.round(values[handle]);
@@ -116,7 +134,7 @@ class SettingsControl extends Reflux.Component {
 			sliderElements.push( 
 				<div className="routingConfigSliderContainer" key={ "slider-" + metricName }>
 					<label className="routingConfigSliderLabel">{prettyTitle}</label>
-					<input className="routingConfigInput" type="number" onChange={ (event) => this.handleSliderChange( event, metricName ) } value={ metricDefinition.value * 100 }/>
+					<input className="routingConfigInput" type="number" onChange={ (event) => this.handleSliderChange( event, metricName ) } value={ (typeof metricDefinition.uiScale !== 'undefined') ? metricDefinition.value * metricDefinition.uiScale : metricDefinition.value * 100 }/>
 					<div className="routingConfigSliderParent" >
 						<div className="routingConfigSlider" ref={ "slider-" + metricName } id={ "slider-" + metricName } > </div> 
 					</div>
