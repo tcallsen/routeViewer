@@ -187,6 +187,14 @@ class AppStore extends Reflux.Store {
             } else routingStatus.time = messageDate;
         } */
 
+        //accumulate routing convergence data for each generation
+        if (routingStatus.step === 3 && routingStatus.fitness.length === 3) {
+            // get immutable (new) instance of chart data OR new instance array
+            var chartData = (!!this.state.routing.backendStatus && this.state.routing.backendStatus.chartData) ? [].concat(this.state.routing.backendStatus.chartData) : [] ;
+            chartData.push( { name: routingStatus.fitness[0] , best: routingStatus.fitness[1] , avg: routingStatus.fitness[2]} );
+            routingStatus.chartData = chartData;
+        }
+
         this.setState({
             routing: Object.assign( this.state.routing , { backendStatus: routingStatus } )
         });

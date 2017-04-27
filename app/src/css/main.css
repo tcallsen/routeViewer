@@ -3,6 +3,7 @@ html, body, div#app {
     height: 100%;
     margin: 0;
     color: rgb(101,101,101);
+    overflow: hidden;
 }
 
 div#mapContainer {
