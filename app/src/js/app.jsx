@@ -20,7 +20,10 @@ class App extends Reflux.Component {
 	}
 
 	shouldComponentUpdate(nextProps, nextState) {
-		return nextState.routing.active !== this.state.routing.active ||
+		return true;
+		console.log( 'app shouldComponentUpdate' , nextState.routing.percentComplete , nextState.routing.state !== this.state.routing.state ||
+			nextState.routing.percentComplete !== this.state.routing.percentComplete);
+		return nextState.routing.state !== this.state.routing.state ||
 			nextState.routing.percentComplete !== this.state.routing.percentComplete;
 	}
 
@@ -29,7 +32,7 @@ class App extends Reflux.Component {
 		return (
 
 			<div>
-				<ProgressBar percent={this.state.routing.percentComplete} autoIncrement={true} spinner='right' intervalTime={30} />
+				<ProgressBar percent={this.state.routing.percentComplete} spinner='right' />
 				<Map />
 			</div>
 

@@ -26,7 +26,7 @@ class StatusLabel extends Reflux.Component {
 	render () {
 		
 		var lineChart = null;
-		if (!!this.state.routing.backendStatus && this.state.routing.backendStatus.step === 3 && this.state.routing.backendStatus.chartData ) {
+		if (!!this.state.routing.backendStatus && ( this.state.routing.backendStatus.step === 3 || this.state.routing.backendStatus.step === 4 ) && this.state.routing.backendStatus.chartData ) {
 			lineChart = (
 				<LineChart width={240} height={300} data={ this.state.routing.backendStatus.chartData }>
 					<Tooltip />
