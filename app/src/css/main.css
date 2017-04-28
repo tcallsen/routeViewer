@@ -231,6 +231,10 @@ div#mapContainer div#routesListControl ul#routesList li.routesListItem p:hover {
     letter-spacing: 1px;
 }
 
+div#mapContainer div#routesListControl ul#routesList li.routesListItem.selected p {
+    color: rgb(253,141,1);
+}
+
 /* routing config settings modal content */
 div#routingConfigModalContent {
 

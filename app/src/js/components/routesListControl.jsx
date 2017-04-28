@@ -71,8 +71,9 @@ class RoutesListControl extends Reflux.Component {
 
 		var routeListElements = Object.keys(this.state.routes).map( (routeSequence) => {
 			var route = this.state.routes[routeSequence];
+ 			var liClassName = ( this.state.selectedRoute !== false && this.state.selectedRoute == routeSequence ) ? 'routesListItem selected' : 'routesListItem' ;
 		 	return (
-		 		<li className="routesListItem" key={'routesListItem-'+routeSequence}>
+		 		<li className={liClassName} key={'routesListItem-'+routeSequence} >
 		 			<p data-routeSequence={routeSequence} onMouseOver={ () => this.handleRouteHover(routeSequence) } >Route {routeSequence}</p>
 	 			</li>
  			);
