@@ -458,14 +458,9 @@ class Map extends Reflux.Component {
 
 				var routingRequestBody = Object.assign( {}, this.state.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() } );
 
-				var routingCallback = function(err,res) {
-					//complete routing sequence
-                	Actions.completeRoutingUI();
-				}.bind(this);
+				Actions.executeRoutingRequest( routingRequestBody , '/getRoutesRandom/' );
 
-				Actions.executeRoutingRequest( routingRequestBody , '/getRoutesRandom/' , routingCallback );
-
-				Actions.submitRoutingUI( routingRequestBody , '/getRoutesRandom/' , routingCallback );
+				Actions.submitRoutingUI( routingRequestBody , '/getRoutesRandom/' );
 
 			}
 

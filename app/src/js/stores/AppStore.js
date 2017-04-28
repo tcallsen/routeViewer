@@ -158,22 +158,6 @@ class AppStore extends Reflux.Store {
         this.onSubmitRoutingUI();
     }
 
-    onCompleteRoutingUI() {
-        
-        this.state.map.snapToLayer.getSource().clear();
-
-        this.setState({
-            routing: {
-                state: 'complete',
-                startCoord: null,
-                endCoord: null,
-                backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
-                percentComplete: 100
-            }
-        });
-
-    }
-
     onUpdateRoutingBackendStatus(routingStatus) {
 
         //confirm this message is most current, otherwise omit
@@ -195,22 +179,29 @@ class AppStore extends Reflux.Store {
                 percentComplete = 10 + ( routingStatus.count[0] * (20/25) );
             } else if (routingStatus.step == 3) {
                 percentComplete +=  Math.floor(Math.random() * 8) + 2 ;
-            }   
+            }  
+            
+            //check for routing completion from backend - update frontend UI 
             if (routingStatus.step == 4) {
+
+                this.state.map.snapToLayer.getSource().clear();
+
                 percentComplete = 100;
+            
             } else if (percentComplete >= 100) percentComplete = 95; //make sure we dont jump ahead too much
+        
         }
 
         //accumulate routing convergence data for each generation
         if ( ( routingStatus.step === 3 || routingStatus.step === 4 ) && routingStatus.fitness.length === 3  ) {
             // get immutable (new) instance of chart data OR new instance array
-            var chartData = (!!this.state.routing.backendStatus && this.state.routing.backendStatus.chartData) ? [].concat(this.state.routing.backendStatus.chartData) : [] ;
+            var chartData = (!!this.state.routing.backendStatus && this.state.routing.backendStatus.chartData) ? [].concat(this.state.routing.backendStatus.chartData) : [ ] ;
             chartData.push( { name: routingStatus.fitness[0] , best: routingStatus.fitness[1] , avg: routingStatus.fitness[2]} );
             routingStatus.chartData = chartData;
         }
 
         this.setState({
-            routing: Object.assign( this.state.routing , { backendStatus: routingStatus , percentComplete: percentComplete } )
+            routing: Object.assign( this.state.routing , { backendStatus: routingStatus , percentComplete: percentComplete } , (routingStatus.step == 4) ? { state: 'complete', startCoord: null, endCoord: null, } : {} )
         });
 
     }

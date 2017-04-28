@@ -5,7 +5,6 @@ var Actions = Reflux.createActions([
 	'executeRoutingRequest',
 	'toggleRoutingUI',
 	'submitRoutingUI',
-	'completeRoutingUI',
 	'updateRoutingBackendStatus',
 	'rerunPreviousRoutingRequest',
 

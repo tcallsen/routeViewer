@@ -185,7 +185,7 @@ class RouteStore extends Reflux.Store {
             .send( routingRequestBody )
             .set('Accept', 'application/json')
             .end( (err, res) => {
-                callback(err, res);
+                if (!!callback) callback(err, res);
             });
 
     }
