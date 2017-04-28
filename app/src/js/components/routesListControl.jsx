@@ -63,6 +63,13 @@ class RoutesListControl extends Reflux.Component {
 				selectedRoute: false
 			});
 
+		} else if (args.type === 'routeStart') {
+
+			this.setState({
+				routes: [],
+				selectedRoute: false
+			});
+
 		}
 
 	}
