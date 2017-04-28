@@ -132,19 +132,25 @@ div#routingConfigModalContent div#settingsCloseControl button:hover {
     cursor: pointer;
 }
 
-
-/* hide settings control when routing complete */
+/* hide re-run control when routing failed */
 body.ReactModal__Body--open div#settingsControl,
 div#mapContainerParent.routing-selecting div#settingsControl,
 div#mapContainerParent.routing-routing div#settingsControl,
 div#mapContainerParent.routing-routing div#routeControl {
     display: none;
 }
+
 div#mapContainer div#rerunControl {
     left: 4.95em;
     bottom: .5em;
     position: absolute;
     z-index: 100;
+    display: none;
+}
+
+/* only display rerun control if routing completed successfully */
+div#mapContainerParent.routing-complete div#rerunControl {
+    display: block;
 }
 
 div#mapContainer div#clearControl {
@@ -305,25 +311,34 @@ div#statusLabelContainer {
     right: 0;
     top: 0;
     background-color: rgba(255,255,255,0.7);
-    padding: 17px 0 17px 0;
+    padding: 17px;
     border-bottom-left-radius: 4px;
+    text-align: right;
     display: none;
 }
 
 div#mapContainerParent.routing-routing div#statusLabelContainer,
-div#mapContainerParent.routing-complete div#statusLabelContainer {
+div#mapContainerParent.routing-complete div#statusLabelContainer,
+div#mapContainerParent.routing-failed div#statusLabelContainer {
     display: block;
 }
 
-div#statusLabelContainer div#statusLabel {
-   margin: 0 44px 0 14px;
-   text-align: right;
+div#mapContainerParent div#chartContainer {
+    display: inline-block;
+    margin: 10px 10px 0 10px;
 }
 
-div#mapContainerParent.routing-complete div#statusLabel {
-    transition: margin-right 1.15s ease-in;
-    margin: 0 14px;
+div#mapContainerParent div#statusMessageContainer {
+    text-align: center;
+    margin: 0 30px 0 0;
 }
-div#statusLabelContainer div#statusLabel h5 {
+
+div#mapContainerParent.routing-complete div#statusMessageContainer,
+div#mapContainerParent.routing-failed div#statusMessageContainer {
+    transition: margin 1.15s ease-in;
+    margin: 0;
+}
+
+div#statusLabelContainer h5 {
     margin: 0;
 }

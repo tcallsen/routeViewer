@@ -33,13 +33,8 @@ class RerunControl extends Reflux.Component {
 	}
 
 	render () {
-		
-		var style = {
-			display: (this.state.routing.percentComplete === 100) ? 'block' : 'none'
-		};
-
 		return (
-			<div id="rerunControl" style={style} className="ol-unselectable ol-control custom-control">
+			<div id="rerunControl" className="ol-unselectable ol-control custom-control">
 				<button><img src='/static/img/ic_autorenew_white_24dp_2x.png'/></button>
 			</div>
 		);

@@ -109,7 +109,7 @@ class AppStore extends Reflux.Store {
 
     onToggleRoutingUI() {
 
-        if (this.state.routing.state != false && this.state.routing.state != 'complete') {
+        if (this.state.routing.state != false && this.state.routing.state != 'complete' && this.state.routing.state != 'failed') {
 
             this.setState({
                 routing: {
@@ -175,14 +175,15 @@ class AppStore extends Reflux.Store {
         //update precent complete
         var percentComplete = this.state.routing.percentComplete;
         if (routingStatus.step) {
+            
             if (routingStatus.step == 2) {
                 percentComplete = 10 + ( routingStatus.count[0] * (20/25) );
             } else if (routingStatus.step == 3) {
                 percentComplete +=  Math.floor(Math.random() * 8) + 2 ;
             }  
             
-            //check for routing completion from backend - update frontend UI 
-            if (routingStatus.step == 4) {
+            //check for ERRORS or COMPLETION from backend - update frontend UI 
+            if (routingStatus.step === 4 || routingStatus.step === -1) {
 
                 this.state.map.snapToLayer.getSource().clear();
 
@@ -201,7 +202,7 @@ class AppStore extends Reflux.Store {
         }
 
         this.setState({
-            routing: Object.assign( this.state.routing , { backendStatus: routingStatus , percentComplete: percentComplete } , (routingStatus.step == 4) ? { state: 'complete', startCoord: null, endCoord: null, } : {} )
+            routing: Object.assign( this.state.routing , { backendStatus: routingStatus , percentComplete: percentComplete } , (routingStatus.step === 4 || routingStatus.step === -1) ? { state: (routingStatus.step !== -1) ? 'complete' : 'failed' , startCoord: null, endCoord: null, } : {} )
         });
 
     }
