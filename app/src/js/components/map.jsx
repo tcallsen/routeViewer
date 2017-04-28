@@ -339,12 +339,14 @@ class Map extends Reflux.Component {
 				
 				if (containScoringPriotization) return;
 				
+				var metricDefinition = this.state.config.roadScoringProperties[metricName];
+
 				/* if ( metricName === 'score_highway') {
 					if ( feature.get( 'score_highway' ) === '1.0' ) containScoringPriotization = true;
 				}
 				else */
 
-				if ( typeof feature.get( metricName ) !== 'undefined' && feature.get( metricName ) !== 0 ) containScoringPriotization = true;
+				if ( typeof feature.get( metricName ) !== 'undefined' && feature.get( metricName ) !== 0 && metricDefinition.value !== 0 ) containScoringPriotization = true;
 
 				/* //debug
 				if ( typeof feature.get( metricName ) !== 'undefined' && metricName !== 'score_highway' ) {
@@ -527,8 +529,8 @@ class Map extends Reflux.Component {
 					
 					var metricDefinition = this.state.config.roadScoringProperties[metricName];
 
-					//skip non score metrics (e.g. population size)
-					if ( typeof metricDefinition.isScore !== 'undefined' && !metricDefinition.isScore ) return;
+					//skip non score metrics (e.g. population size) and deactivated metrics
+					if ( typeof metricDefinition.isScore !== 'undefined' && !metricDefinition.isScore || metricDefinition.value === 0 ) return;
 
 					if ( typeof feature.get( metricName ) !== 'undefined' && feature.get( metricName ) !== 0 ) {
 						console.log( metricName + ":  " + feature.get( metricName ) );
