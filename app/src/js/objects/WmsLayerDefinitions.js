@@ -3,8 +3,9 @@ import request from 'superagent';
 
 import Actions from '../actions/actions.js';
 
-var DOMParser = global.DOMParser = require('xmldom').DOMParser;
-var WMSCapabilities = require('wms-capabilities');
+import xmlDom from 'xmldom';
+global.DOMParser = xmlDom.DOMParser;
+import WMSCapabilities from 'wms-capabilities';
 
 class WmsLayerDefinitions {
 
