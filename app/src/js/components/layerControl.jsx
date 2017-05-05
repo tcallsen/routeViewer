@@ -39,11 +39,6 @@ class LayerControl extends Reflux.Component {
 
 	buildLayerListItems() {
 
-		var enabledLayers = []
-		Object.values(this.props.getWmsLayerDefinitionsFlat()).map( layerDefinition => {
-			if (layerDefinition.enabled) enabledLayers.push( layerDefinition.name );
-		});
-
 		var buildChildrenList = function( parentWmsLayerDef ) {
 
 			var childDefinitionElements = [];
@@ -52,7 +47,7 @@ class LayerControl extends Reflux.Component {
 
 				var childLayerElement = (
 					<li className="wmsLayerListItem" data-wmslayerguid={childLayerDefinition.name} key={childLayerDefinition.name}>
-						<input type="checkbox" checked={ enabledLayers.indexOf( childLayerDefinition.name ) > -1 } />
+						<input type="checkbox" checked={ childLayerDefinition.enabled } />
 						<p>{childLayerDefinition.title}</p>
 						{ (childLayerDefinition.children.length > 0) ? buildChildrenList( childLayerDefinition ) : null }
 					</li>
@@ -68,7 +63,7 @@ class LayerControl extends Reflux.Component {
 
 		var rootDomNode = (
 			<div>
-				{ (Object.keys(this.props.layerDefinitions).length > 0) ? buildChildrenList( this.props.layerDefinitions ) : null }
+				{ (Object.keys(this.props.layerDefinitions.tree).length > 0) ? buildChildrenList( this.props.layerDefinitions.tree ) : null }
 			</div>
 		);
 
@@ -99,7 +94,7 @@ class LayerControl extends Reflux.Component {
 	toggleWmsLayerVisibility(event) {
 		var wmsLayerGuid = event.target.parentNode.getAttribute('data-wmslayerguid');
 		Actions.updateMapWmsLayerDefinitions({
-			enabled: !this.props.getWmsLayerDefinitionsByGuid(wmsLayerGuid).enabled
+			enabled: !this.props.layerDefinitions.getByGuid(wmsLayerGuid).enabled
 		}, wmsLayerGuid);
 	}
 

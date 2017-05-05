@@ -6,6 +6,7 @@ import uuid from 'uuid';
 import request from 'superagent';
 
 import AppStore from '../stores/AppStore.js';
+import MapStore from '../stores/MapStore.js';
 import RouteStore from '../stores/RouteStore.js';
 import Actions from '../actions/actions.js';
 
@@ -27,7 +28,7 @@ class Map extends Reflux.Component {
 		super(props);
 		
 		//register AppState store
-		this.store = AppStore;
+		this.stores = [AppStore,MapStore];
 		
 		//register RouteStore updates
 		this.mapStoreToState( RouteStore, this.handleRouteStoreUpdate.bind(this) );
@@ -35,10 +36,7 @@ class Map extends Reflux.Component {
 		this.clearRoutesLayer = this.clearRoutesLayer.bind(this);
 		this.getFeatureStyle = this.getFeatureStyle.bind(this);
 		this.getHighlightedFeatureStyle = this.getHighlightedFeatureStyle.bind(this);
-		this.retrieveWmsMapLayers = this.retrieveWmsMapLayers.bind(this);
-		this.getWmsLayerDefinitionsFlat = this.getWmsLayerDefinitionsFlat.bind(this);
-		this.getWmsLayerDefinitionsByGuid = this.getWmsLayerDefinitionsByGuid.bind(this);
-
+	
 	}
 
 	componentDidMount() {
@@ -114,19 +112,14 @@ class Map extends Reflux.Component {
 		map.on('click', this.handleMapClick.bind(this));
 		map.on('pointermove', this.handleMapPointerMove.bind(this));
 
-		Actions.setMapState({ 
+		Actions.setMapStoreReferences({ 
 			map: map,
 			wmsLayersGroup: wmsLayersGroup,
-			layerControlVisible: false,
 			routesLayer: routesLayer,
 			highlightedRoutesLayer: highlightedRoutesLayer,
 			snapToLayer: snapToLayer,
-			wmsLayerDefinitions: {},
 			context: this
 		});
-
-		//retrieve wms map layers
-		this.retrieveWmsMapLayers();
 
 	}
 
@@ -138,14 +131,13 @@ class Map extends Reflux.Component {
 
 			var existingEnabled = [];
 			var existingDisabled = [];
-			this.state.map.wmsLayersGroup.getLayers().getArray().forEach( layer => {
+			this.state.wmsLayersGroup.getLayers().getArray().forEach( layer => {
 				existingEnabled.push( layer.get('guid') );
 			});
 
 			var updateEnabled = [];
 			var updateDisabled = [];
-			Object.keys(this.getWmsLayerDefinitionsFlat()).forEach( layerDefinitionKey => {
-				var layerDefinition = this.getWmsLayerDefinitionsByGuid(layerDefinitionKey);
+			this.state.wmsLayerDefinitions.getFlatList().forEach( layerDefinition => {
 				if (layerDefinition.enabled) updateEnabled.push( layerDefinition.layer.get('guid') );
 				else updateDisabled.push( layerDefinition.layer.get('guid') );
 			});
@@ -159,100 +151,15 @@ class Map extends Reflux.Component {
 			//add any enabled to map
 			updateEnabled.forEach( layerGuid => {
 				if (existingEnabled.indexOf(layerGuid) == -1) {
-					this.state.map.wmsLayersGroup.getLayers().push( this.state.map.wmsLayerDefinitions[layerGuid].layer );
+					this.state.wmsLayersGroup.getLayers().push( this.state.wmsLayerDefinitions[layerGuid].layer );
 				}
 			});
 
 			updateDisabled.forEach( layerGuid => {
 				if (existingEnabled.indexOf(layerGuid) != -1) {
-					this.state.map.wmsLayersGroup.getLayers().remove( this.state.map.wmsLayerDefinitions[layerGuid].layer );
+					this.state.wmsLayersGroup.getLayers().remove( this.state.wmsLayerDefinitions[layerGuid].layer );
 				}
 			});
-
-	}
-
-    getWmsLayerDefinitionsFlat() {
-        
-        var returnDefinitions= {};
-
-        var recurseWmsLayerDefinition = function ( wmsLayerDef ) {
-            returnDefinitions[ wmsLayerDef.name ] = wmsLayerDef;
-            wmsLayerDef.children.forEach( childWmsLayerDef => recurseWmsLayerDefinition(childWmsLayerDef) );
-        }
-
-        //recurse through chilren @ root
-        if (this.state.map.wmsLayerDefinitions.children) this.state.map.wmsLayerDefinitions.children.forEach( wmsLayerDef => recurseWmsLayerDefinition( wmsLayerDef ) );
-
-        return returnDefinitions;
-    }
-
-    getWmsLayerDefinitionsByGuid(wmsGuid) {
-    	var flatWmsLayers = this.getWmsLayerDefinitionsFlat();
-    	var layerNeedle = false;
-    	Object.values(flatWmsLayers).forEach( layerDefinition => {
-    		if (!!layerNeedle) return;
-    		if (layerDefinition.name === wmsGuid) layerNeedle = layerDefinition;
-    	});
-    	return layerNeedle;
-    }
-
-	retrieveWmsMapLayers() {
-
-		var DOMParser = global.DOMParser = require('xmldom').DOMParser;
-		var WMSCapabilities = require('wms-capabilities');
-
-		request.get( 'http://costia.gritto.net:8880/geoserver/ows?service=wms&version=1.1.1&request=GetCapabilities' )
-			.set('Accept', 'application/xml')
-			.end( (err, res) => {
-	
-				var getCapabilitiesObj = new WMSCapabilities(res.text).toJSON();
-				var capabilityLayers = getCapabilitiesObj.Capability.Layer.Layer;
-
-				var layersTree = {
-					isRoot: true,
-					enabled: false,
-					layer: null,
-					children: []
-				}
-
-				capabilityLayers.forEach( layerNode => this.recurseWmsMapLayers(layersTree, layerNode) );
-
-				console.log( 'recieved wms layers:', layersTree );
-
-				Actions.updateMapWmsLayerDefinitions(layersTree);
-
-			});
-
-	}
-
-	recurseWmsMapLayers(parentNode, layerNode) {
-
-		//assemble layer information into OL layer object
-		var olLayer = new ol.layer.Tile({
-			extent: [ layerNode.BoundingBox[0].extent[0] , layerNode.BoundingBox[0].extent[1] , layerNode.BoundingBox[0].extent[2] , layerNode.BoundingBox[0].extent[3] ],
-			source: new ol.source.TileWMS(({
-				url: 'http://costia.gritto.net:8880/geoserver/route/wms',
-				params: {'LAYERS': layerNode.Name , 'TILED': true},
-				serverType: 'geoserver'
-			})),
-			guid: layerNode.Name || layerNode.Title,
-			children: []
-		});
-
-		var currentNewLayerNode = {
-			enabled: false,
-			name: layerNode.Name || layerNode.Title,
-			title: layerNode.Title || layerNode.Name,
-			layer: olLayer,
-			children: []
-		};
-
-		//recurse into child layers
-		if (layerNode.Layer && layerNode.Layer.length > 0) {
-			layerNode.Layer.forEach( childLayerNode => this.recurseWmsMapLayers( currentNewLayerNode , childLayerNode ) );
-		}
-
-		parentNode.children.push( currentNewLayerNode );
 
 	}
 
@@ -557,7 +464,7 @@ class Map extends Reflux.Component {
 
 		//derive mapContainer className
 		var className = "";
-		if (this.state.map.layerControlVisible)  className += 'layerControlVisible ';
+		if (this.state.layerControlVisible)  className += 'layerControlVisible ';
 		if (this.state.routing.state) className += 'routing-' + this.state.routing.state;
 
 		return (
@@ -570,10 +477,8 @@ class Map extends Reflux.Component {
 
 				<LayerControl
 					ref="layerControl" 
-					layerDefinitions={ (!!this.state.map) ? this.state.map.wmsLayerDefinitions : {} }
-					isVisible={ (!!this.state.map) ? this.state.map.layerControlVisible : false }
-					getWmsLayerDefinitionsByGuid={this.getWmsLayerDefinitionsByGuid}
-					getWmsLayerDefinitionsFlat={this.getWmsLayerDefinitionsFlat} />
+					layerDefinitions={ this.state.wmsLayerDefinitions }
+					isVisible={ this.state.layerControlVisible } />
 
 				<RouteControl 
 					ref="routeControl" 

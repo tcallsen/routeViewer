@@ -33,36 +33,9 @@ class AppStore extends Reflux.Store {
                 backendStatus: null,
                 percentComplete: -1
             },
-            map: {
-                wmsLayerDefinitions: []
-            }
+            layerControlVisible: false,
         };
 
-    }
-
-    onSetMapState(args) {
-        this.setState({
-            map: args
-        });
-    }
-
-    onUpdateMapWmsLayerDefinitions(args, guid) {
-        if (typeof guid == 'undefined') {
-            this.setState({
-                map: Object.assign( this.state.map , { wmsLayerDefinitions: args } )
-            });
-        } else {
-            var updatedMapLayerDefinitions = this.state.map.wmsLayerDefinitions;
-            var updateMapLayerDefinition = this.state.map.context.getWmsLayerDefinitionsByGuid(guid);
-            Object.keys(args).forEach( argKey => {
-                if (argKey === 'layer') console.log("WARNING - trying to update layer property on wmsLayerDefinitions - may lose track of layer obj reference in map!!")
-                updateMapLayerDefinition[argKey] = args[argKey];
-            });
-            updatedMapLayerDefinitions[guid] = updateMapLayerDefinition;
-            this.setState({
-                map: Object.assign( this.state.map , { wmsLayerDefinitions: updatedMapLayerDefinitions } )
-            });
-        }
     }
 
     onToggleMapControlVisibility(forceVisibility) {
@@ -71,25 +44,13 @@ class AppStore extends Reflux.Store {
 
             // SET per forceVisibility
             
-            this.setState({
-                map: Object.assign( this.state.map , { layerControlVisible: forceVisibility } )
-            });
-
-        } else if (this.state.map.layerControlVisible ) {
-
-            // HIDE layers
-
-            this.setState({
-                map: Object.assign( this.state.map , { layerControlVisible: !this.state.map.layerControlVisible } )
-            });
+            this.setState(Object.assign( this.state , { layerControlVisible: forceVisibility } ) );
 
         } else {
 
-            // SHOW layers
+            // TOGGLE layers
 
-            this.setState({
-                map: Object.assign( this.state.map , { layerControlVisible: !this.state.map.layerControlVisible } )
-            });
+            this.setState(Object.assign( this.state , { layerControlVisible: !this.state.layerControlVisible } ) );
 
         }
 
