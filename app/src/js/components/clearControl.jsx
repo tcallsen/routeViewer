@@ -39,7 +39,7 @@ class ClearControl extends Reflux.Component {
 	render () {
 		
 		var style = {
-			display: (this.props.routingState === 'complete') ? 'block' : 'none'
+			display: (this.props.routingState.state === 'complete') ? 'block' : 'none'
 		};
 
 		return (

@@ -26,8 +26,8 @@ class Map extends Reflux.Component {
 	constructor(props) {
 		super(props);
 		
-		//register AppState store
-		this.store = MapStore;
+		//register MapStore for wms layer information and RouteStore for route vector feature information
+		this.stores = [MapStore, RouteStore];
 		
 		//register RouteStore updates
 		this.mapStoreToState( RouteStore, this.handleRouteStoreUpdate.bind(this) );
@@ -310,7 +310,7 @@ class Map extends Reflux.Component {
 	handleMapClick(event) {
 
 		// ROUTING
-		if (this.props.routingState === 'selecting') {
+		if (this.props.routingState.state === 'selecting') {
 
 			var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
 
@@ -321,16 +321,18 @@ class Map extends Reflux.Component {
 	}
 
 	handleMapPointerMove(event) {
-		return;
+		
 		// ROUTING
 		
-		if (this.props.routingState === 'selecting') {
+		if (this.props.routingState.state === 'selecting') {
 
-			if (!this.state.routing.startCoord && !this.handleMapPointerMove.requestOut) {
+			console.log('selecting');
+
+			if (!this.props.routingState.startCoord && !this.handleMapPointerMove.requestOut) {
 
 				this.handleMapPointerMove.requestOut = true;
 				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
-				var routingRequestBody = {startCoord: hoveredPointWkt };
+				var routingRequestBody = { startCoord: hoveredPointWkt };
 
 				Actions.executeRoutingRequest( routingRequestBody , '/getClosestPoint/' , function(err,res) {
 					
@@ -346,9 +348,11 @@ class Map extends Reflux.Component {
 
 			} else if (!this.handleMapPointerMove.requestOut) {
 
+				console.log( 'startCoord entered' );
+
 				this.handleMapPointerMove.requestOut = true;
 				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
-				var routingRequestBody = Object.assign( {}, this.state.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() , endCoord: hoveredPointWkt } );
+				var routingRequestBody = Object.assign( this.props.routingState , { endCoord: hoveredPointWkt } );
 
 				Actions.executeRoutingRequest( routingRequestBody , '/getRoute/' , function(err,res) {
 					
@@ -367,7 +371,7 @@ class Map extends Reflux.Component {
 		}
 
 		//highlight road scoring
-		if (this.props.routingState === 'routing' || this.props.routingState === 'complete') {
+		if (this.props.routingState.state === 'routing' || this.props.routingState.state === 'complete') {
 
 			this.state.map.forEachFeatureAtPixel(event.pixel, (feature, layer) => {
 				
@@ -406,7 +410,7 @@ class Map extends Reflux.Component {
 		//derive mapContainer className
 		var className = "";
 		if (this.props.layerControlVisible)  className += 'layerControlVisible ';
-		if (this.props.routingState) className += 'routing-' + this.props.routingState;
+		if (this.props.routingState.state) className += 'routing-' + this.props.routingState.state;
 
 		return (
 

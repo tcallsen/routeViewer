@@ -27,7 +27,7 @@ class App extends Reflux.Component {
 				<ProgressBar percent={this.state.routing.percentComplete} spinner='right' />
 				<Map 
 					layerControlVisible= {this.state.layerControlVisible}
-					routingState={this.state.routing.state}
+					routingState={this.state.routing}
 					config={this.state.config} />
 			</div>
 

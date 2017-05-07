@@ -3,6 +3,7 @@ import request from 'superagent';
 
 import io from 'socket.io-client';
 import ol from 'openlayers';
+import uuid from 'uuid';
 
 import AppStore from './AppStore.js';
 
@@ -46,7 +47,8 @@ class RouteStore extends Reflux.Store {
             previousRoutingRequest: null,
             socket: socket,
             routes: {},
-            highlightedRoutes: {}
+            highlightedRoutes: {},
+            snapToRoutes: {}
         };
 
     }
@@ -168,8 +170,12 @@ class RouteStore extends Reflux.Store {
         //derive routing REST endpoint from webappConfig
         var routingRestEndpointUrl = AppStore.state.config.routingRestEndpoint.protocol + '://' + AppStore.state.config.routingRestEndpoint.host + ':' + AppStore.state.config.routingRestEndpoint.port + '/' + AppStore.state.config.routingRestEndpoint.path + endpointAddition;
 
-        //append routingConfig to routingRequestBody
-        routingRequestBody = Object.assign( routingRequestBody , { routingConfig : this.state.routingConfig.scoring } );
+        //append routingConfig to routingRequestBody - need new or immutable object here since original routingRequestBody us modified on Actions.setRoutingState()
+        routingRequestBody = Object.assign( {} , routingRequestBody , {  
+            routingConfig : this.state.routingConfig.scoring,
+            datetime: (new Date()).toISOString(),
+            guid: uuid.v1()
+        });
 
         //place routing request to backend
         request.post( routingRestEndpointUrl )
@@ -183,7 +189,7 @@ class RouteStore extends Reflux.Store {
         if (endpointAddition === '/getRoutesRandom/') {
             this.setState({
                 previousRoutingRequest: {
-                    routingRequestBody: Object.assign( {} , routingRequestBody), //need new or immutable object here since original routingRequestBody us modified on Actions.setRoutingState()
+                    routingRequestBody: routingRequestBody, 
                     endpointAddition: endpointAddition,
                     callback: callback
                 }

@@ -23,7 +23,13 @@ class MapStore extends Reflux.Store {
 
         //set default app state
         this.state = {
-            wmsLayerDefinitions: new WmsLayerDefinitions(wmsUrl)
+            wmsLayerDefinitions: new WmsLayerDefinitions(wmsUrl),
+            map: null,
+            wmsLayersGroup: null,
+            routesLayer: null,
+            highlightedRoutesLayer: null,
+            snapToLayer: null,
+            context: null
         };
 
     }

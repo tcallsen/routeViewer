@@ -1,6 +1,5 @@
 import Reflux from 'reflux';
 import request from 'superagent';
-import uuid from 'uuid';
 
 import Actions from '../actions/actions.js';
 
@@ -55,9 +54,7 @@ class AppStore extends Reflux.Store {
             var nextRoutingState = Object.assign( this.state.routing , {
                 state: 'routing',       //would be handled in call to Actions.setRoutingState('routing')
                 percentComplete: 10,    //would be handled in call to Actions.setRoutingState('routing')
-                endCoord: clickedPointWkt,
-                datetime: (new Date()).toISOString(), 
-                guid: uuid.v1()
+                endCoord: clickedPointWkt
             });
 
             //set state to store, which will update UI
