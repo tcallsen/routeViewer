@@ -17,9 +17,10 @@ var Actions = Reflux.createActions([
 	// WMS Layers
 	'updateMapWmsLayerDefinitions',
 	'toggleMapControlVisibility',
-	
-	'toggleRoutingSettingsVisibility',
+
 	'setRoutingConfigParameters',
+	'toggleRoutingSettingsVisibility',
+	
 	'updateRouteScoringMetricValue',
 
 	'highlightRoutes'

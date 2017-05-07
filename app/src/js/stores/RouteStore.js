@@ -55,12 +55,12 @@ class RouteStore extends Reflux.Store {
         //reset routes if user is no longer routing or is restarting routing (this will clear routes from map / UI)
         if (!desiredState || desiredState === 'selecting' || desiredState === 'routing') {
             this.setState({
+                snapToFeatures: {},
                 routes: {},
-                snapToFeatures: {}
+                highlightedRoutes: {}
             });
         } 
     }
-
 
     processNewStatus(status) {
         Actions.updateRoutingBackendStatus( JSON.parse(status) );
@@ -79,7 +79,10 @@ class RouteStore extends Reflux.Store {
 
         //save features to RouteStore state at routeSequence and communicate out to UI
         var routes = this.state.routes;
-        routes[ routeIdentifier ] = routeFeatures;
+        routes[ routeIdentifier ] = { 
+            features: routeFeatures 
+        };
+
         this.setState({
             routes: routes
         });
@@ -88,17 +91,26 @@ class RouteStore extends Reflux.Store {
 
     onHighlightRoutes(highlightedRouteSequences) {
 
-        this.setState.highlightedRoutes = highlightedRoutes;
-        
-        var highlightedRoutes = {};
+        var highlightedRoutes = this.state.highlightedRoutes;
+
+        //remove any routes that are no longer highlighted
+        Object.keys( highlightedRoutes ).forEach( previouslyHighlightRouteSequence => {
+            if ( highlightedRouteSequences.indexOf( previouslyHighlightRouteSequence ) == -1 ) {
+                delete highlightedRoutes[previouslyHighlightRouteSequence];
+            }
+        } )
+
+        //add any newly highlighted routes
         highlightedRouteSequences.forEach( highlightedRouteSequence => {
-            highlightedRoutes[highlightedRouteSequences] = this.state.routes[highlightedRouteSequences]
+            if ( !highlightedRoutes[highlightedRouteSequence] ) {
+                highlightedRoutes[highlightedRouteSequence] = {
+                    features: this.state.routes[highlightedRouteSequence].features
+                };
+            }
         });
 
-        // trigger recieved route down to components
-        this.trigger({
-            type: 'highlightedRoutes',
-            routes: highlightedRoutes
+        this.setState({
+            highlightedRoutes: highlightedRoutes
         });
 
     }
@@ -194,7 +206,9 @@ class RouteStore extends Reflux.Store {
     featureArrayToObject( features , property = 'id' ) {
         var featuresObject = {};
         features.forEach( feature => {
-            featuresObject[feature.get(property)] = feature;
+            featuresObject[feature.get(property)] = {
+                features: [feature]
+            };
         });
         return featuresObject;
     }

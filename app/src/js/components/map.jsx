@@ -28,9 +28,6 @@ class Map extends Reflux.Component {
 		
 		//register MapStore for wms layer information and RouteStore for route vector feature information
 		this.stores = [MapStore, RouteStore];
-		
-		//register RouteStore updates
-		this.mapStoreToState( RouteStore, this.handleRouteStoreUpdate.bind(this) );
 
 		this.getFeatureStyle = this.getFeatureStyle.bind(this);
 		this.getHighlightedFeatureStyle = this.getHighlightedFeatureStyle.bind(this);
@@ -41,7 +38,6 @@ class Map extends Reflux.Component {
 
 		var routesLayer = new ol.layer.Vector({
 			name: 'routesLayer',
-			//style: this.getFeatureStyle,
 			source: new ol.source.Vector({
 				features:[],
 				wrapX: false
@@ -50,7 +46,7 @@ class Map extends Reflux.Component {
 
 		var highlightedRoutesLayer = new ol.layer.Vector({
 			name: 'highlightedRoutesLayer',
-			style: this.getFeatureStyle,
+			style: this.getHighlightedFeatureStyle,
 			source: new ol.source.Vector({
 				features:[],
 				wrapX: false
@@ -139,12 +135,6 @@ class Map extends Reflux.Component {
 				else updateDisabled.push( layerDefinition.layer.get('guid') );
 			});
 
-			//console.log( 'existingEnabled' , existingEnabled );
-			//console.log( 'existingDisabled' , existingDisabled );
-
-			//console.log( 'updateEnabled' , updateEnabled );
-			//console.log( 'updateDisabled' , updateDisabled );
-
 			//add any enabled to map
 			updateEnabled.forEach( layerGuid => {
 				if (existingEnabled.indexOf(layerGuid) == -1) {
@@ -163,7 +153,7 @@ class Map extends Reflux.Component {
 			// snap to features (when selecting routing start and end points)
 			this.state.snapToLayer.setSource(
 				new ol.source.Vector({
-					features: Object.values( this.state.snapToFeatures ),
+					features: [].concat.apply([], Object.values( this.state.snapToFeatures ).map( snapToFeature => { return snapToFeature.features; } ) ),
 					wrapX: false
 				})
 			);
@@ -171,10 +161,23 @@ class Map extends Reflux.Component {
 			// route features (routes returned from routing)
 			this.state.routesLayer.setSource(
 				new ol.source.Vector({
-					features: [].concat.apply([], Object.values( this.state.routes ) ), //flatten routing features into single array
+					features: [].concat.apply([], Object.values( this.state.routes ).map( route => { return route.features; } ) ), //flatten routing features into single array
 					wrapX: false
 				})
 			);
+
+			// highlighted route features (routes hovered orselected from discovered routes list)
+			this.state.highlightedRoutesLayer.setSource(
+				new ol.source.Vector({
+					features: [].concat.apply([], Object.values( this.state.highlightedRoutes ).map( route => { return route.features; } ) ), //flatten routing features into single array
+					wrapX: false
+				})
+			);
+
+			// dim base routing features if highlighted features are present
+			if ( Object.values( this.state.highlightedRoutes ).length > 0 ) {
+				this.state.routesLayer.setOpacity( .045 );
+			} else this.state.routesLayer.setOpacity( 1 );
 
 	}
 
@@ -295,31 +298,6 @@ class Map extends Reflux.Component {
 
 	}
 
-	handleRouteStoreUpdate(args) {
-		
-		if (args.type === 'newRoute') {
-
-			this.state.routesLayer.getSource().addFeatures( args.features );
-
-		} else if (args.type === 'highlightedRoutes') {
-
-			//clear only highlightedRoutesLayer
-			//Actions.clearMapLayerSource('highlightedRoutesLayer');
-
-			//loop through supplied features and add highlight flag
-			Object.values(args.routes).forEach( route => {
-				this.state.highlightedRoutesLayer.getSource().addFeatures( route.features );
-			});
-
-			//if highlight features are present, dim base features layer
-			if ( this.state.highlightedRoutesLayer.getSource().getFeatures().length > 0 ) {
-				this.state.routesLayer.setOpacity( .035 );
-			} else this.state.routesLayer.setOpacity( 1 );
-
-		}
-
-	}
-
 	handleMapClick(event) {
 
 		// ROUTING
@@ -435,7 +413,8 @@ class Map extends Reflux.Component {
 					ref="settingsControl" />
 					
 				<RoutesListControl 
-					ref="routesListControl" />
+					ref="routesListControl"
+					routingState={this.props.routingState} />
 
 				<RerunControl
 					ref="rerunControl" />

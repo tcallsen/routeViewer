@@ -29,7 +29,7 @@ class MapStore extends Reflux.Store {
     }
 
     onUpdateMapWmsLayerDefinitions(args, guid) {
-        if (typeof guid == 'undefined') {
+        if (typeof guid === 'undefined') {
             this.setState( Object.assign( this.state , { wmsLayerDefinitions: args } ) );
         } else {
             var updatedMapLayerDefinitions = this.state.wmsLayerDefinitions;

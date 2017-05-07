@@ -32,9 +32,8 @@ class WmsLayerDefinitions {
 
                 console.log( 'recieved wms layers:', this );
 
-                Actions.setMapStoreReferences({ 
-                	wmsLayerDefinitions: this
-                });
+                //save updates made 
+                Actions.updateMapWmsLayerDefinitions( this );
 
             });
 

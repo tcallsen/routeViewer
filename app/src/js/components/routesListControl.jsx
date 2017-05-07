@@ -14,17 +14,12 @@ class RoutesListControl extends Reflux.Component {
 	constructor(props) {
 		super(props);
 		
+		//maintain list of locally selected routes
 		this.state = {
-			routes: {},
-			selectedRoute: false
-		};
+			selectedRoutes: []
+		}
 
-		this.store = AppStore;
-
-		//register RouteStore updates
-		this.mapStoreToState( RouteStore, this.handleRouteStoreUpdate.bind(this) );
-
-		//routing values available in this.props.routing
+		this.store = RouteStore;
 
 		// This binding is necessary to make `this` work in the callback
     	this.toggleRoutesSelected = this.toggleRoutesSelected.bind(this);
@@ -52,34 +47,15 @@ class RoutesListControl extends Reflux.Component {
 
 	}
 
-	handleRouteStoreUpdate(args) {
-
-		if (args.type === 'routeEnd') {
-
-			this.setState({
-				routes: args.routes,
-				selectedRoute: false
-			});
-
-		} else if (args.type === 'routeStart') {
-
-			this.setState({
-				routes: [],
-				selectedRoute: false
-			});
-
-		}
-
-	}
-
 	getRoutesListElements() {
 
 		var routeListElements = Object.keys(this.state.routes).map( (routeSequence) => {
+			if (routeSequence === 'spindle') return; //skip spindle entries
 			var route = this.state.routes[routeSequence];
- 			var liClassName = ( this.state.selectedRoute !== false && this.state.selectedRoute == routeSequence ) ? 'routesListItem selected' : 'routesListItem' ;
+ 			var liClassName = ( this.state.selectedRoutes.indexOf(parseInt(routeSequence)) > -1 ) ? 'routesListItem selected' : 'routesListItem' ;
 		 	return (
 		 		<li className={liClassName} key={'routesListItem-'+routeSequence} >
-		 			<p data-routeSequence={routeSequence} onMouseOver={ () => this.handleRouteHover(routeSequence) } >Route {routeSequence}</p>
+		 			<p data-routeSequence={routeSequence} onMouseOver={ () => this.handleRouteHover(routeSequence) } onMouseOut={ () => this.handleRouteHover(routeSequence) } >Route {routeSequence}</p>
 	 			</li>
  			);
 		});
@@ -93,35 +69,40 @@ class RoutesListControl extends Reflux.Component {
 	}
 
 	handleRouteHover(routeSequence, forceHighlight = false) {
+		
+		//retrieve previously selected routes (and make copy too allow of non corrupting mutation)
+		var mergedRoutes = this.state.selectedRoutes.slice(0);
 
-		//return if routes are selected
-		if (this.state.selectedRoute !== false && !forceHighlight) return;
+		//merge in hovered route if it is not already present
+		if ( typeof routeSequence !== 'undefined' && mergedRoutes.indexOf( routeSequence ) === -1 ) {
+			mergedRoutes.push( routeSequence );
+		}
 
-		var highlightedRouteSequences = (typeof routeSequence !== 'undefined') ? [routeSequence] : [];
-		Actions.highlightRoutes( highlightedRouteSequences );
+		Actions.highlightRoutes( mergedRoutes );
 
 	}
 
 	toggleRoutesSelected(event) {
 		
+		//get current selected routes and determine routeSequence of recentely selected route
+		var selectedRoutes = this.state.selectedRoutes;
 		var routeSequence = parseInt(event.target.getAttribute('data-routeSequence'));
 
-		if (routeSequence === this.state.selectedRoute) {
-			this.setState({
-				selectedRoute: false
-			});
-		} else {
-			this.setState({
-				selectedRoute: routeSequence
-			});
-			this.handleRouteHover(routeSequence, true);
-		}
+		//remove selected route from list if present, otherwise add it
+		if (selectedRoutes.indexOf(routeSequence) > -1) {
+			selectedRoutes.splice( selectedRoutes.indexOf(routeSequence) , 1 );
+		} else selectedRoutes.push( routeSequence );
+
+		//save updated selected routes list to local component state
+		this.setState({
+			selectedRoutes: selectedRoutes
+		});
 
 	}
 
 	render () {
 
-		var displayPanel = this.state.routing.percentComplete === 100;
+		var displayPanel = ( this.props.routingState.state === 'complete' || this.props.routingState.state === 'failed' );
 
 		var className = "ol-unselectable ol-control custom-control";
 		if (displayPanel) className += ' active';

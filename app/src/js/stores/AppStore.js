@@ -149,6 +149,8 @@ class AppStore extends Reflux.Store {
             if (routingStatus.step === 4 || routingStatus.step === -1) {
 
                 percentComplete = 100;
+
+                Actions.setSnapToFeatures([]);
             
             } else if (percentComplete >= 100) percentComplete = 95; //make sure we dont jump ahead too much
         
