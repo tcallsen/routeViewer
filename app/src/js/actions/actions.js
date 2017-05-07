@@ -6,6 +6,9 @@ var Actions = Reflux.createActions([
 	'setRoutingCoord',
 	'setRoutingState',
 	
+	// Map Features
+	'setSnapToFeatures',
+
 	'executeRoutingRequest',
 	'updateRoutingBackendStatus',
 	'rerunPreviousRoutingRequest',

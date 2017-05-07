@@ -179,7 +179,7 @@ class AppStore extends Reflux.Store {
             //check for ERRORS or COMPLETION from backend - update frontend UI 
             if (routingStatus.step === 4 || routingStatus.step === -1) {
 
-                Actions.clearMapLayerSource('snapToLayer');
+                Actions.setSnapToFeatures({});
 
                 percentComplete = 100;
             

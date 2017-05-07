@@ -123,7 +123,7 @@ class Map extends Reflux.Component {
 
 	componentDidUpdate(prevProps, prevState) {
 
-		//RECONCILE IF wmsMapLayers has been updated
+		// WMS LAYERS has been updated
 
 	    	//console.log('map componentDidUpdate');
 
@@ -158,6 +158,16 @@ class Map extends Reflux.Component {
 					this.state.wmsLayersGroup.getLayers().remove( this.state.wmsLayerDefinitions[layerGuid].layer );
 				}
 			});
+
+		// MAP FEATURES
+		 
+		//console.log( this.state );
+		this.state.snapToLayer.setSource(
+			new ol.source.Vector({
+				features: Object.values( this.state.snapToFeatures ),
+				wrapX: false
+			})
+		);
 
 	}
 
@@ -321,52 +331,46 @@ class Map extends Reflux.Component {
 	}
 
 	handleMapPointerMove(event) {
-		
-		// ROUTING
-		
+
+		//memoise to function for quick access
+		this.geoJsonParser = this.geoJsonParser || new ol.format.GeoJSON();
+		this.handleMapPointerMove.requestOut = this.handleMapPointerMove.requestOut || false;
+
+		//Finds closest point or single route between two points if
 		if (this.props.routingState.state === 'selecting') {
 
-			console.log('selecting');
+			//check to make sure request has not already been dispatched to server (prevents flooding of server with requests)
+			if (this.handleMapPointerMove.requestOut) return
 
-			if (!this.props.routingState.startCoord && !this.handleMapPointerMove.requestOut) {
+			this.handleMapPointerMove.requestOut = true;
+			var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
 
-				this.handleMapPointerMove.requestOut = true;
-				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
-				var routingRequestBody = { startCoord: hoveredPointWkt };
-
-				Actions.executeRoutingRequest( routingRequestBody , '/getClosestPoint/' , function(err,res) {
-					
-					this.handleMapPointerMove.requestOut = false;
-
-					var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
-
-					var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
-					Actions.clearMapLayerSource('snapToLayer');
-					this.state.snapToLayer.getSource().addFeatures( routeFeatures ); 
-
-				}.bind(this) );
-
-			} else if (!this.handleMapPointerMove.requestOut) {
-
-				console.log( 'startCoord entered' );
-
-				this.handleMapPointerMove.requestOut = true;
-				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
-				var routingRequestBody = Object.assign( this.props.routingState , { endCoord: hoveredPointWkt } );
-
-				Actions.executeRoutingRequest( routingRequestBody , '/getRoute/' , function(err,res) {
-					
-					this.handleMapPointerMove.requestOut = false;
-
-					var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
-
-					var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
-					Actions.clearMapLayerSource('snapToLayer');
-					this.state.snapToLayer.getSource().addFeatures( routeFeatures ); 
-
-				}.bind(this) );
-
+			//prepare request based on if retrieving closest point or requesting single route
+			var urlSuffix;
+			var routingRequestBody;
+			if (!this.props.routingState.startCoord) {
+				routingRequestBody = { startCoord: hoveredPointWkt };
+				urlSuffix = '/getClosestPoint/';
+			} else {
+				routingRequestBody = Object.assign( this.props.routingState , { endCoord: hoveredPointWkt } );
+				urlSuffix = '/getRoute/';
 			}
+
+			//invoke routing requests from RouteStore - define callback to set returned features to snapToLayer
+			Actions.executeRoutingRequest( routingRequestBody , urlSuffix , (err,res) => {
+
+				var routeFeatures = this.geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
+
+				this.handleMapPointerMove.requestOut = false;
+
+				var snapToFeatures = {};
+				routeFeatures.forEach( feature => {
+					snapToFeatures[feature.get('id')] = feature;
+				});
+
+				Actions.setSnapToFeatures( snapToFeatures );
+
+			});
 
 		}
 

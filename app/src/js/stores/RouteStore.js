@@ -48,7 +48,7 @@ class RouteStore extends Reflux.Store {
             socket: socket,
             routes: {},
             highlightedRoutes: {},
-            snapToRoutes: {}
+            snapToFeatures: {}
         };
 
     }
@@ -165,6 +165,12 @@ class RouteStore extends Reflux.Store {
         this.onExecuteRoutingRequest( this.state.previousRoutingRequest.routingRequestBody , this.state.previousRoutingRequest.endpointAddition , this.state.previousRoutingRequest.callback );
     }
 
+    onSetSnapToFeatures(snapToFeatures) {
+        this.setState({
+            snapToFeatures: snapToFeatures
+        });
+    }
+
     onExecuteRoutingRequest(routingRequestBody, endpointAddition, callback) {
 
         //derive routing REST endpoint from webappConfig
@@ -182,7 +188,7 @@ class RouteStore extends Reflux.Store {
             .send( routingRequestBody )
             .set('Accept', 'application/json')
             .end( (err, res) => {
-                if (!!callback) callback(err, res);
+                if (!!callback && res.ok) callback(err, res);
             });
 
         //if initiating full routing request, track previousRoutingRequest
