@@ -5,13 +5,16 @@ var Actions = Reflux.createActions([
 	// Routing state
 	'setRoutingCoord',
 	'setRoutingState',
-	
+	'updateRoutingBackendStatus',
+
 	// Map Features
 	'setSnapToFeatures',
 
+	// Executing Routing
 	'executeRoutingRequest',
-	'updateRoutingBackendStatus',
 	'rerunPreviousRoutingRequest',
+
+
 
 	'clearMapLayerSource',
 

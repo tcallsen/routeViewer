@@ -102,43 +102,27 @@ class AppStore extends Reflux.Store {
 
         var routingState = {};
 
-        //determine current state, or accept forceState
-        if (typeof desiredState !== 'undefined') {
-
-            //reset routing to initial statae
-            if (desiredState === false) {
-                
-                routingState = {
-                    state: false,
-                    startCoord: null,
-                    endCoord: null,
-                    backendStatus: null,
-                    percentComplete: -1
-                };
+        //reset routing to initial statae
+        if (!desiredState) {
             
-            //update to selecting state
-            } else if (desiredState === 'selecting') {
-                
-                routingState =  {
-                    state: 'selecting',
-                    startCoord: null,
-                    endCoord: null,
-                    backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
-                    percentComplete: -1
-                };
-
-            //update to routing state
-            } else if (desiredState === 'routing') {
-                
-                routingState =  {
-                    state: 'routing',
-                    startCoord: (!!this.state.routing.startCoord) ? this.state.routing.startCoord : null ,
-                    endCoord: (!!this.state.routing.endCoord) ? this.state.routing.endCoord : null ,
-                    backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
-                    percentComplete: 10
-                };
-
-            }
+            routingState = {
+                state: false,
+                startCoord: null,
+                endCoord: null,
+                backendStatus: null,
+                percentComplete: -1
+            };
+        
+        //update to selecting state
+        } else if (desiredState === 'selecting') {
+            
+            routingState =  {
+                state: 'selecting',
+                startCoord: null,
+                endCoord: null,
+                backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
+                percentComplete: -1
+            };
 
         }
 
@@ -146,10 +130,6 @@ class AppStore extends Reflux.Store {
             routing: routingState
         });
 
-    }
-
-    onRerunPreviousRoutingRequest() {
-        this.onSetRoutingState('routing');
     }
 
     onUpdateRoutingBackendStatus(routingStatus) {
@@ -178,8 +158,6 @@ class AppStore extends Reflux.Store {
             
             //check for ERRORS or COMPLETION from backend - update frontend UI 
             if (routingStatus.step === 4 || routingStatus.step === -1) {
-
-                Actions.setSnapToFeatures({});
 
                 percentComplete = 100;
             

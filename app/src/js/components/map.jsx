@@ -161,13 +161,21 @@ class Map extends Reflux.Component {
 
 		// MAP FEATURES
 		 
-		//console.log( this.state );
-		this.state.snapToLayer.setSource(
-			new ol.source.Vector({
-				features: Object.values( this.state.snapToFeatures ),
-				wrapX: false
-			})
-		);
+			// snap to features (when selecting routing start and end points)
+			this.state.snapToLayer.setSource(
+				new ol.source.Vector({
+					features: Object.values( this.state.snapToFeatures ),
+					wrapX: false
+				})
+			);
+
+			// route features (routes returned from routing)
+			this.state.routesLayer.setSource(
+				new ol.source.Vector({
+					features: [].concat.apply([], Object.values( this.state.routes ) ), //flatten routing features into single array
+					wrapX: false
+				})
+			);
 
 	}
 
@@ -333,7 +341,7 @@ class Map extends Reflux.Component {
 	handleMapPointerMove(event) {
 
 		//memoise to function for quick access
-		this.geoJsonParser = this.geoJsonParser || new ol.format.GeoJSON();
+		this.handleMapPointerMove.geoJsonParser = this.handleMapPointerMove.geoJsonParser || new ol.format.GeoJSON();
 		this.handleMapPointerMove.requestOut = this.handleMapPointerMove.requestOut || false;
 
 		//Finds closest point or single route between two points if
@@ -359,14 +367,9 @@ class Map extends Reflux.Component {
 			//invoke routing requests from RouteStore - define callback to set returned features to snapToLayer
 			Actions.executeRoutingRequest( routingRequestBody , urlSuffix , (err,res) => {
 
-				var routeFeatures = this.geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
+				var snapToFeatures = this.handleMapPointerMove.geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
 
 				this.handleMapPointerMove.requestOut = false;
-
-				var snapToFeatures = {};
-				routeFeatures.forEach( feature => {
-					snapToFeatures[feature.get('id')] = feature;
-				});
 
 				Actions.setSnapToFeatures( snapToFeatures );
 

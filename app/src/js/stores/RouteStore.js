@@ -24,15 +24,13 @@ class RouteStore extends Reflux.Store {
             console.log('socket connceted');
         });
 
-        socket.on( 'routestart' , this.processRouteStart.bind(this) );
-        socket.on( 'routeend' , this.processRouteEnd.bind(this) );
-        socket.on( 'newRoute' , this.processNewRoute.bind(this) );
+        socket.on( 'newRoute' , this.appendNewRoute.bind(this) );
         socket.on( 'newStatus' , this.processNewStatus.bind(this) );
         socket.on( 'newBestScore' , (message) => {
 
             var messageJson = JSON.parse(message);
 
-            this.onHighlightRoutes( [messageJson.routeSequence] )
+            //this.onHighlightRoutes( [messageJson.routeSequence] )
 
             //console.log('newBestScore recieved: ' + messageJson.routeSequence);
 
@@ -53,54 +51,38 @@ class RouteStore extends Reflux.Store {
 
     }
 
-    processRouteStart(requestGuid) {
-
-        this.state.routes = [];
-
-        // trigger recieved route down to components
-        this.trigger({
-            type: 'routeStart',
-            requestGuid: requestGuid
-        });
+    onSetRoutingState(desiredState) {
         
+        //reset routes if user is no longer routing or is restarting routing (this will clear routes from map / UI)
+        if (!desiredState || desiredState === 'selecting' || desiredState === 'routing') {
+            this.setState({
+                routes: {},
+                snapToFeatures: {}
+            });
+        } 
     }
 
-    processRouteEnd(requestGuid) {
-
-        // trigger recieved route down to components
-        this.trigger({
-            type: 'routeEnd',
-            requestGuid: requestGuid,
-            routes: this.state.routes
-        });
-
-    }
 
     processNewStatus(status) {
         Actions.updateRoutingBackendStatus( JSON.parse(status) );
     }
 
-    processNewRoute(route) {
+    appendNewRoute(route) {
 
-        //parse route into OpenLayers feature
-        var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
-        var routeFeatures = geoJsonParser.readFeatures( route , { featureProjection: 'EPSG:3857' } );
+        //memoise to function for quick access
+        this.appendNewRoute.geoJsonParser = this.appendNewRoute.geoJsonParser || new ol.format.GeoJSON();
 
-        var routeSequence = routeFeatures[0].get('routeSequence');
+        //parse route features into OpenLayers feature
+        var routeFeatures = this.appendNewRoute.geoJsonParser.readFeatures( route , { featureProjection: 'EPSG:3857' } );
 
-        //save route into local state
-        if (typeof routeSequence !== 'undefined') {
-            this.state.routes[routeSequence] = {
-                features: routeFeatures,
-                json: route
-            };
-        }
+        //establish route identifier (usually based on routeSequence from backend, however routing spindles do not have a routeSequence)
+        var routeIdentifier = ( typeof routeFeatures[0].get('routeSequence') !== 'undefined' ) ? routeFeatures[0].get('routeSequence') : 'spindle' ;
 
-        // trigger recieved route down to components
-        this.trigger({
-            type: 'newRoute',
-            routeSequence: routeSequence,
-            features: routeFeatures
+        //save features to RouteStore state at routeSequence and communicate out to UI
+        var routes = this.state.routes;
+        routes[ routeIdentifier ] = routeFeatures;
+        this.setState({
+            routes: routes
         });
 
     }
@@ -162,12 +144,18 @@ class RouteStore extends Reflux.Store {
     }
 
     onRerunPreviousRoutingRequest() {
+        
+        //execute previously saved routing request
         this.onExecuteRoutingRequest( this.state.previousRoutingRequest.routingRequestBody , this.state.previousRoutingRequest.endpointAddition , this.state.previousRoutingRequest.callback );
+
+        //update routing state and UI
+        Actions.setRoutingState('routing');
+
     }
 
     onSetSnapToFeatures(snapToFeatures) {
         this.setState({
-            snapToFeatures: snapToFeatures
+            snapToFeatures: this.featureArrayToObject( snapToFeatures )
         });
     }
 
@@ -202,6 +190,14 @@ class RouteStore extends Reflux.Store {
             });
         }
 
+    }
+
+    featureArrayToObject( features , property = 'id' ) {
+        var featuresObject = {};
+        features.forEach( feature => {
+            featuresObject[feature.get(property)] = feature;
+        });
+        return featuresObject;
     }
 
 }
