@@ -14,10 +14,8 @@ class ClearControl extends Reflux.Component {
 		
 		this.state = {};
 
-		//routing values available in this.props.routing
-
 		// This binding is necessary to make `this` work in the callback
-    	this.clearRoutes = this.clearRoutes.bind(this);
+    	this.clearRouting = this.clearRouting.bind(this);
 
 	}
 
@@ -27,19 +25,18 @@ class ClearControl extends Reflux.Component {
 		    element: ReactDOM.findDOMNode(this)
 		});
 
-		document.getElementById('clearControl').addEventListener("click", this.clearRoutes.bind(this));
+		document.getElementById('clearControl').addEventListener("click", this.clearRouting.bind(this));
 
 	}	
 
-	clearRoutes() {
-		//Actions.clearMapLayerSource('routesLayer');
+	clearRouting() {
 		Actions.setRoutingState(false);
 	}
 
 	render () {
 		
 		var style = {
-			display: (this.props.routingState.state === 'complete') ? 'block' : 'none'
+			display: (this.props.routingState.state === 'complete' || this.props.routingState.state === 'failed') ? 'block' : 'none'
 		};
 
 		return (

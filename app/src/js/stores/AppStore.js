@@ -87,17 +87,6 @@ class AppStore extends Reflux.Store {
 
     }
 
-    onClearRoutes(args) {
-        this.setState({
-            routing: {
-                state: false,
-                startCoord: null,
-                endCoord: null,
-                percentComplete: -1
-            }
-        });
-    }
-
     onSetRoutingState(desiredState) {
 
         var routingState = {};

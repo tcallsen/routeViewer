@@ -23,19 +23,9 @@ class MapStore extends Reflux.Store {
 
         //set default app state
         this.state = {
-            wmsLayerDefinitions: new WmsLayerDefinitions(wmsUrl),
-            map: null,
-            wmsLayersGroup: null,
-            routesLayer: null,
-            highlightedRoutesLayer: null,
-            snapToLayer: null,
-            context: null
+            wmsLayerDefinitions: new WmsLayerDefinitions(wmsUrl)
         };
 
-    }
-
-    onSetMapStoreReferences(args) {
-        this.setState( Object.assign( this.state , args ) );
     }
 
     onUpdateMapWmsLayerDefinitions(args, guid) {
@@ -51,62 +41,6 @@ class MapStore extends Reflux.Store {
             updatedMapLayerDefinitions[guid] = updateMapLayerDefinition;
             this.setState( Object.assign( this.state , { wmsLayerDefinitions: updatedMapLayerDefinitions } ) );
         }
-    }
-
-    onClearMapLayerSource(layerName, args = false) {
-
-        console.log( 'onClearMapLayerSource clearing' , layerName );
-
-        /* if (layerName === 'routesLayer') {
-
-            // base routes
-
-            if (!args || (args && args.indexOf(0) > -1) ) {
-
-                this.state.map.removeLayer( this.state.routesLayer );
-
-                this.state.routesLayer = new ol.layer.Vector({
-                    name: 'routesLayer',
-                    //style: this.getFeatureStyle,
-                    source: new ol.source.Vector({
-                        features:[],
-                        wrapX: false
-                    })
-                });
-
-                this.state.map.addLayer( this.state.routesLayer );
-
-            }
-
-            // highlighted routes
-
-            if (!args || (args && args.indexOf(1) > -1) ) {
-
-                this.state.map.removeLayer( this.state.highlightedRoutesLayer );
-
-                this.state.highlightedRoutesLayer = new ol.layer.Vector({
-                    name: 'highlightedRoutesLayer',
-                    style: this.getHighlightedFeatureStyle,
-                    source: new ol.source.Vector({
-                        features:[],
-                        wrapX: false
-                    })
-                });
-
-                this.state.map.addLayer( this.state.highlightedRoutesLayer );
-
-            }
-
-        } else { */
-
-            this.state.map.getLayers().forEach( layer => {
-                if (layerName === layer.get('name')) {
-                    layer.getSource().clear();
-                }
-            });
-
-        //}
-
     }
 
 }

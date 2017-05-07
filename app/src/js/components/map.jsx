@@ -110,13 +110,12 @@ class Map extends Reflux.Component {
 		map.on('click', this.handleMapClick.bind(this));
 		map.on('pointermove', this.handleMapPointerMove.bind(this));
 
-		Actions.setMapStoreReferences({ 
+		this.setState({ 
 			map: map,
 			wmsLayersGroup: wmsLayersGroup,
 			routesLayer: routesLayer,
 			highlightedRoutesLayer: highlightedRoutesLayer,
-			snapToLayer: snapToLayer,
-			context: this
+			snapToLayer: snapToLayer
 		});
 
 	}
@@ -301,10 +300,6 @@ class Map extends Reflux.Component {
 		if (args.type === 'newRoute') {
 
 			this.state.routesLayer.getSource().addFeatures( args.features );
-
-		} else if (args.type === 'routeStart') {
-
-			Actions.clearMapLayerSource('routesLayer');
 
 		} else if (args.type === 'highlightedRoutes') {
 

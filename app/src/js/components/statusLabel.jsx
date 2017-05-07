@@ -16,11 +16,6 @@ class StatusLabel extends Reflux.Component {
 
 		this.store = AppStore;
 
-		//routing values available in this.props.routing
-
-		// This binding is necessary to make `this` work in the callback
-    	//this.clearRoutes = this.clearRoutes.bind(this);
-
 	}
 
 	render () {

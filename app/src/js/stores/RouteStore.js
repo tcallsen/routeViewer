@@ -52,7 +52,6 @@ class RouteStore extends Reflux.Store {
     }
 
     onSetRoutingState(desiredState) {
-        
         //reset routes if user is no longer routing or is restarting routing (this will clear routes from map / UI)
         if (!desiredState || desiredState === 'selecting' || desiredState === 'routing') {
             this.setState({

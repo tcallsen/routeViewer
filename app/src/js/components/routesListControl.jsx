@@ -37,8 +37,6 @@ class RoutesListControl extends Reflux.Component {
 		    element: ReactDOM.findDOMNode(this)
 		});
 
-		//document.getElementById('clearControl').addEventListener("click", this.clearRoutes.bind(this));
-
 	}	
 
 	componentDidUpdate(prevProps, prevState) {

@@ -14,15 +14,10 @@ var Actions = Reflux.createActions([
 	'executeRoutingRequest',
 	'rerunPreviousRoutingRequest',
 
-
-
-	'clearMapLayerSource',
-
-	'setMapStoreReferences',
+	// WMS Layers
 	'updateMapWmsLayerDefinitions',
 	'toggleMapControlVisibility',
-	'clearRoutes',
-
+	
 	'toggleRoutingSettingsVisibility',
 	'setRoutingConfigParameters',
 	'updateRouteScoringMetricValue',
