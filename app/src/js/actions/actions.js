@@ -2,11 +2,15 @@ import Reflux from 'reflux';
 
 var Actions = Reflux.createActions([
 	
+	// Routing state
+	'setRoutingCoord',
+	'setRoutingState',
+	
 	'executeRoutingRequest',
-	'toggleRoutingUI',
-	'submitRoutingUI',
 	'updateRoutingBackendStatus',
 	'rerunPreviousRoutingRequest',
+
+	'clearMapLayerSource',
 
 	'setMapStoreReferences',
 	'updateMapWmsLayerDefinitions',

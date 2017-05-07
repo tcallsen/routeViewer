@@ -32,14 +32,15 @@ class RouteControl extends Reflux.Component {
 	}	
 
 	toggleRoutingUI() {
-		Actions.toggleRoutingUI();
+		var desiredRoutingState = (this.props.routingState === 'selecting') ? false : 'selecting' ;
+		Actions.setRoutingState(desiredRoutingState);
 	}
 
 	render () {
 		return (
 			<div id="routeControl" className="ol-unselectable ol-control custom-control">
 				<button>
-					<img src={ (this.props.routing.state === 'selecting') ? '/static/img/ic_close_white_24dp_2x.png' : '/static/img/ic_directions_walk_black_24dp_2x.png' }/>
+					<img src={ (this.props.routingState === 'selecting') ? '/static/img/ic_close_white_24dp_2x.png' : '/static/img/ic_directions_walk_black_24dp_2x.png' }/>
 				</button>
 			</div>
 		);

@@ -14,8 +14,6 @@ class RerunControl extends Reflux.Component {
 		
 		this.state = {};
 
-		this.store = AppStore;
-
 	}
 
 	componentDidMount() {

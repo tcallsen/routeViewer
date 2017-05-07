@@ -2,7 +2,6 @@ import Reflux from 'reflux';
 import ReactDOM from 'react-dom';
 import React from 'react';
 
-import uuid from 'uuid';
 import request from 'superagent';
 
 import AppStore from '../stores/AppStore.js';
@@ -28,12 +27,11 @@ class Map extends Reflux.Component {
 		super(props);
 		
 		//register AppState store
-		this.stores = [AppStore,MapStore];
+		this.store = MapStore;
 		
 		//register RouteStore updates
 		this.mapStoreToState( RouteStore, this.handleRouteStoreUpdate.bind(this) );
 
-		this.clearRoutesLayer = this.clearRoutesLayer.bind(this);
 		this.getFeatureStyle = this.getFeatureStyle.bind(this);
 		this.getHighlightedFeatureStyle = this.getHighlightedFeatureStyle.bind(this);
 	
@@ -163,48 +161,6 @@ class Map extends Reflux.Component {
 
 	}
 
-	clearRoutesLayer(args) {
-
-		// base routes
-
-		if (!args || (args && args.indexOf(0) > -1) ) {
-
-			this.state.map.map.removeLayer( this.state.map.routesLayer );
-
-			this.state.map.routesLayer = new ol.layer.Vector({
-				name: 'routesLayer',
-				//style: this.getFeatureStyle,
-				source: new ol.source.Vector({
-					features:[],
-					wrapX: false
-				})
-			});
-
-			this.state.map.map.addLayer( this.state.map.routesLayer );
-
-		}
-
-		// highlighted routes
-
-		if (!args || (args && args.indexOf(1) > -1) ) {
-
-			this.state.map.map.removeLayer( this.state.map.highlightedRoutesLayer );
-
-			this.state.map.highlightedRoutesLayer = new ol.layer.Vector({
-				name: 'highlightedRoutesLayer',
-				style: this.getHighlightedFeatureStyle,
-				source: new ol.source.Vector({
-					features:[],
-					wrapX: false
-				})
-			});
-
-			this.state.map.map.addLayer( this.state.map.highlightedRoutesLayer );
-
-		}
-
-	}
-
 	getFeatureStyle(feature, resolution) {
 
 		//console.log('getting base style for ' + feature.get('routeSequence'));
@@ -242,11 +198,11 @@ class Map extends Reflux.Component {
 			//check if special scoring exists on feature / road - if so highlight
 
 			var containScoringPriotization = false;
-			Object.keys(this.state.config.roadScoringProperties).forEach( metricName => {
+			Object.keys(this.props.config.roadScoringProperties).forEach( metricName => {
 				
 				if (containScoringPriotization) return;
 				
-				var metricDefinition = this.state.config.roadScoringProperties[metricName];
+				var metricDefinition = this.props.config.roadScoringProperties[metricName];
 
 				/* if ( metricName === 'score_highway') {
 					if ( feature.get( 'score_highway' ) === '1.0' ) containScoringPriotization = true;
@@ -326,26 +282,26 @@ class Map extends Reflux.Component {
 		
 		if (args.type === 'newRoute') {
 
-			this.state.map.routesLayer.getSource().addFeatures( args.features );
+			this.state.routesLayer.getSource().addFeatures( args.features );
 
 		} else if (args.type === 'routeStart') {
 
-			this.clearRoutesLayer()
+			Actions.clearMapLayerSource('routesLayer');
 
 		} else if (args.type === 'highlightedRoutes') {
 
 			//clear only highlightedRoutesLayer
-			this.clearRoutesLayer([1]);
+			//Actions.clearMapLayerSource('highlightedRoutesLayer');
 
 			//loop through supplied features and add highlight flag
 			Object.values(args.routes).forEach( route => {
-				this.state.map.highlightedRoutesLayer.getSource().addFeatures( route.features );
+				this.state.highlightedRoutesLayer.getSource().addFeatures( route.features );
 			});
 
 			//if highlight features are present, dim base features layer
-			if ( this.state.map.highlightedRoutesLayer.getSource().getFeatures().length > 0 ) {
-				this.state.map.routesLayer.setOpacity( .035 );
-			} else this.state.map.routesLayer.setOpacity( 1 );
+			if ( this.state.highlightedRoutesLayer.getSource().getFeatures().length > 0 ) {
+				this.state.routesLayer.setOpacity( .035 );
+			} else this.state.routesLayer.setOpacity( 1 );
 
 		}
 
@@ -353,42 +309,27 @@ class Map extends Reflux.Component {
 
 	handleMapClick(event) {
 
-		//console.log(this.state.map.map.getView().getCenter(), this.state.map.map.getView().getZoom());
-		
 		// ROUTING
-		if (this.state.routing.state === 'selecting') {
+		if (this.props.routingState === 'selecting') {
 
-			var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.map.getCoordinateFromPixel(event.pixel)) ) );
+			var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
 
-			if (!this.state.routing.startCoord) this.state.routing.startCoord = clickedPointWkt;
-			else {
-				
-				this.state.routing.endCoord = clickedPointWkt;
-
-				var routingRequestBody = Object.assign( {}, this.state.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() } );
-
-				Actions.executeRoutingRequest( routingRequestBody , '/getRoutesRandom/' );
-
-				Actions.submitRoutingUI( routingRequestBody , '/getRoutesRandom/' );
-
-			}
-
-			return;
+			Actions.setRoutingCoord( clickedPointWkt );
 
 		}
 
 	}
 
 	handleMapPointerMove(event) {
-
+		return;
 		// ROUTING
 		
-		if (this.state.routing.state === 'selecting') {
+		if (this.props.routingState === 'selecting') {
 
 			if (!this.state.routing.startCoord && !this.handleMapPointerMove.requestOut) {
 
 				this.handleMapPointerMove.requestOut = true;
-				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.map.getCoordinateFromPixel(event.pixel)) ) );
+				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
 				var routingRequestBody = {startCoord: hoveredPointWkt };
 
 				Actions.executeRoutingRequest( routingRequestBody , '/getClosestPoint/' , function(err,res) {
@@ -398,15 +339,15 @@ class Map extends Reflux.Component {
 					var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
 
 					var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
-					this.state.map.snapToLayer.getSource().clear();
-					this.state.map.snapToLayer.getSource().addFeatures( routeFeatures ); 
+					Actions.clearMapLayerSource('snapToLayer');
+					this.state.snapToLayer.getSource().addFeatures( routeFeatures ); 
 
 				}.bind(this) );
 
 			} else if (!this.handleMapPointerMove.requestOut) {
 
 				this.handleMapPointerMove.requestOut = true;
-				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.map.getCoordinateFromPixel(event.pixel)) ) );
+				var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
 				var routingRequestBody = Object.assign( {}, this.state.routing , { datetime: (new Date()).toISOString() , guid: uuid.v1() , endCoord: hoveredPointWkt } );
 
 				Actions.executeRoutingRequest( routingRequestBody , '/getRoute/' , function(err,res) {
@@ -416,8 +357,8 @@ class Map extends Reflux.Component {
 					var geoJsonParser = new ol.format.GeoJSON(); //{ featureProjection: 'EPSG:4326' }
 
 					var routeFeatures = geoJsonParser.readFeatures( res.text, { featureProjection: 'EPSG:3857' } );
-					this.state.map.snapToLayer.getSource().clear();
-					this.state.map.snapToLayer.getSource().addFeatures( routeFeatures ); 
+					Actions.clearMapLayerSource('snapToLayer');
+					this.state.snapToLayer.getSource().addFeatures( routeFeatures ); 
 
 				}.bind(this) );
 
@@ -426,15 +367,15 @@ class Map extends Reflux.Component {
 		}
 
 		//highlight road scoring
-		if (this.state.routing.state === 'routing' || this.state.routing.state === 'complete') {
+		if (this.props.routingState === 'routing' || this.props.routingState === 'complete') {
 
-			this.state.map.map.forEachFeatureAtPixel(event.pixel, (feature, layer) => {
+			this.state.map.forEachFeatureAtPixel(event.pixel, (feature, layer) => {
 				
 				if ( layer.get('name') !== 'highlightedRoutesLayer' ) return;
 				
-				Object.keys(this.state.config.roadScoringProperties).forEach( metricName => {
+				Object.keys(this.props.config.roadScoringProperties).forEach( metricName => {
 					
-					var metricDefinition = this.state.config.roadScoringProperties[metricName];
+					var metricDefinition = this.props.config.roadScoringProperties[metricName];
 
 					//skip non score metrics (e.g. population size) and deactivated metrics
 					if ( typeof metricDefinition.isScore !== 'undefined' && !metricDefinition.isScore || metricDefinition.value === 0 ) return;
@@ -464,8 +405,8 @@ class Map extends Reflux.Component {
 
 		//derive mapContainer className
 		var className = "";
-		if (this.state.layerControlVisible)  className += 'layerControlVisible ';
-		if (this.state.routing.state) className += 'routing-' + this.state.routing.state;
+		if (this.props.layerControlVisible)  className += 'layerControlVisible ';
+		if (this.props.routingState) className += 'routing-' + this.props.routingState;
 
 		return (
 
@@ -478,11 +419,11 @@ class Map extends Reflux.Component {
 				<LayerControl
 					ref="layerControl" 
 					layerDefinitions={ this.state.wmsLayerDefinitions }
-					isVisible={ this.state.layerControlVisible } />
+					isVisible={ this.props.layerControlVisible } />
 
 				<RouteControl 
 					ref="routeControl" 
-					routing={this.state.routing} />
+					routingState={this.props.routingState} />
 
 				<SettingsControl 
 					ref="settingsControl" />
@@ -494,7 +435,8 @@ class Map extends Reflux.Component {
 					ref="rerunControl" />
 
 				<ClearControl 
-					ref="clearControl" />
+					ref="clearControl"
+					routingState={this.props.routingState} />
 
 			</div>
 

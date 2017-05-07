@@ -159,16 +159,6 @@ class RouteStore extends Reflux.Store {
 
     }
 
-    onSubmitRoutingUI(routingRequestBody, endpointAddition, callback) {
-        this.setState({
-            previousRoutingRequest: {
-                routingRequestBody: routingRequestBody,
-                endpointAddition: endpointAddition,
-                callback: callback
-            }
-        });
-    }
-
     onRerunPreviousRoutingRequest() {
         this.onExecuteRoutingRequest( this.state.previousRoutingRequest.routingRequestBody , this.state.previousRoutingRequest.endpointAddition , this.state.previousRoutingRequest.callback );
     }
@@ -181,12 +171,24 @@ class RouteStore extends Reflux.Store {
         //append routingConfig to routingRequestBody
         routingRequestBody = Object.assign( routingRequestBody , { routingConfig : this.state.routingConfig.scoring } );
 
+        //place routing request to backend
         request.post( routingRestEndpointUrl )
             .send( routingRequestBody )
             .set('Accept', 'application/json')
             .end( (err, res) => {
                 if (!!callback) callback(err, res);
             });
+
+        //if initiating full routing request, track previousRoutingRequest
+        if (endpointAddition === '/getRoutesRandom/') {
+            this.setState({
+                previousRoutingRequest: {
+                    routingRequestBody: Object.assign( {} , routingRequestBody), //need new or immutable object here since original routingRequestBody us modified on Actions.setRoutingState()
+                    endpointAddition: endpointAddition,
+                    callback: callback
+                }
+            });
+        }
 
     }
 

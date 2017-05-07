@@ -14,8 +14,6 @@ class ClearControl extends Reflux.Component {
 		
 		this.state = {};
 
-		this.store = AppStore;
-
 		//routing values available in this.props.routing
 
 		// This binding is necessary to make `this` work in the callback
@@ -34,13 +32,14 @@ class ClearControl extends Reflux.Component {
 	}	
 
 	clearRoutes() {
-		Actions.clearRoutes();
+		//Actions.clearMapLayerSource('routesLayer');
+		Actions.setRoutingState(false);
 	}
 
 	render () {
 		
 		var style = {
-			display: (this.state.routing.percentComplete === 100) ? 'block' : 'none'
+			display: (this.props.routingState === 'complete') ? 'block' : 'none'
 		};
 
 		return (

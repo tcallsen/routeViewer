@@ -1,5 +1,6 @@
 import Reflux from 'reflux';
 import request from 'superagent';
+import uuid from 'uuid';
 
 import Actions from '../actions/actions.js';
 
@@ -38,6 +39,39 @@ class AppStore extends Reflux.Store {
 
     }
 
+    onSetRoutingCoord( clickedPointWkt ){
+
+        // set initial routing coord if none are present
+        if (!this.state.routing.startCoord) {
+            
+            this.setState({
+                routing: Object.assign( this.state.routing , { startCoord: clickedPointWkt } )
+            });
+        
+        // initiate full routing request if first routing coord already set
+        } else {
+            
+            //generate next routing state comeplete with routing coords and state updated
+            var nextRoutingState = Object.assign( this.state.routing , {
+                state: 'routing',       //would be handled in call to Actions.setRoutingState('routing')
+                percentComplete: 10,    //would be handled in call to Actions.setRoutingState('routing')
+                endCoord: clickedPointWkt,
+                datetime: (new Date()).toISOString(), 
+                guid: uuid.v1()
+            });
+
+            //set state to store, which will update UI
+            this.setState({
+                routing: nextRoutingState
+            });
+
+            //execute routing request through RouteStore
+            Actions.executeRoutingRequest( nextRoutingState , '/getRoutesRandom/' );
+
+        }
+
+    }
+
     onToggleMapControlVisibility(forceVisibility) {
 
         if (typeof forceVisibility !== 'undefined') {
@@ -57,7 +91,6 @@ class AppStore extends Reflux.Store {
     }
 
     onClearRoutes(args) {
-        this.state.map.context.clearRoutesLayer();
         this.setState({
             routing: {
                 state: false,
@@ -68,55 +101,58 @@ class AppStore extends Reflux.Store {
         });
     }
 
-    onToggleRoutingUI() {
+    onSetRoutingState(desiredState) {
 
-        if (this.state.routing.state != false && this.state.routing.state != 'complete' && this.state.routing.state != 'failed') {
+        var routingState = {};
 
-            this.setState({
-                routing: {
+        //determine current state, or accept forceState
+        if (typeof desiredState !== 'undefined') {
+
+            //reset routing to initial statae
+            if (desiredState === false) {
+                
+                routingState = {
                     state: false,
                     startCoord: null,
                     endCoord: null,
                     backendStatus: null,
                     percentComplete: -1
-                }
-            });
-
-        } else {
-
-            //hide layers list
-            Actions.toggleMapControlVisibility(false);
-
-            this.setState({
-                routing: {
+                };
+            
+            //update to selecting state
+            } else if (desiredState === 'selecting') {
+                
+                routingState =  {
                     state: 'selecting',
                     startCoord: null,
                     endCoord: null,
                     backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
                     percentComplete: -1
-                }
-            });
+                };
 
-            this.state.map.context.clearRoutesLayer();
+            //update to routing state
+            } else if (desiredState === 'routing') {
+                
+                routingState =  {
+                    state: 'routing',
+                    startCoord: (!!this.state.routing.startCoord) ? this.state.routing.startCoord : null ,
+                    endCoord: (!!this.state.routing.endCoord) ? this.state.routing.endCoord : null ,
+                    backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
+                    percentComplete: 10
+                };
+
+            }
 
         }
 
-    }
-
-    onSubmitRoutingUI() {
         this.setState({
-            routing: {
-                state: 'routing',
-                startCoord: null,
-                endCoord: null,
-                backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
-                percentComplete: 10
-            }
+            routing: routingState
         });
+
     }
 
     onRerunPreviousRoutingRequest() {
-        this.onSubmitRoutingUI();
+        this.onSetRoutingState('routing');
     }
 
     onUpdateRoutingBackendStatus(routingStatus) {
@@ -146,7 +182,7 @@ class AppStore extends Reflux.Store {
             //check for ERRORS or COMPLETION from backend - update frontend UI 
             if (routingStatus.step === 4 || routingStatus.step === -1) {
 
-                this.state.map.snapToLayer.getSource().clear();
+                Actions.clearMapLayerSource('snapToLayer');
 
                 percentComplete = 100;
             
