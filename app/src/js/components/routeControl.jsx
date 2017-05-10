@@ -33,7 +33,9 @@ class RouteControl extends Reflux.Component {
 
 	toggleRoutingUI() {
 		var desiredRoutingState = (this.props.routingState.state === 'selecting') ? false : 'selecting' ;
-		Actions.setRoutingState(desiredRoutingState);
+		Actions.setRoutingState({ 
+			state: desiredRoutingState
+		});
 	}
 
 	render () {

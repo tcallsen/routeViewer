@@ -15,7 +15,6 @@ class App extends Reflux.Component {
 	
 	constructor(props) {
 		super(props);
-		this.state = { };
 		this.store = AppStore;
 	}
 

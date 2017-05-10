@@ -30,7 +30,7 @@ class ClearControl extends Reflux.Component {
 	}	
 
 	clearRouting() {
-		Actions.setRoutingState(false);
+		Actions.setRoutingState();
 	}
 
 	render () {

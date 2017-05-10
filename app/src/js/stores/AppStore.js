@@ -87,12 +87,12 @@ class AppStore extends Reflux.Store {
 
     }
 
-    onSetRoutingState(desiredState) {
+    onSetRoutingState(desiredRoutingState) {
 
         var routingState = {};
 
         //reset routing to initial statae
-        if (!desiredState) {
+        if (!desiredRoutingState || !desiredRoutingState.state) {
             
             routingState = {
                 state: false,
@@ -103,7 +103,7 @@ class AppStore extends Reflux.Store {
             };
         
         //update to selecting state
-        } else if (desiredState === 'selecting') {
+        } else if (desiredRoutingState.state === 'selecting') {
             
             routingState =  {
                 state: 'selecting',
@@ -114,7 +114,7 @@ class AppStore extends Reflux.Store {
             };
 
         //update to routing state
-        } else if (desiredState === 'routing') {
+        } else if (desiredRoutingState.state === 'routing') {
             
             routingState =  {
                 state: 'routing',

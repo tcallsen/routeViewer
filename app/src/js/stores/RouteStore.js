@@ -160,7 +160,9 @@ class RouteStore extends Reflux.Store {
         this.onExecuteRoutingRequest( this.state.previousRoutingRequest.routingRequestBody , this.state.previousRoutingRequest.endpointAddition , this.state.previousRoutingRequest.callback );
 
         //update routing state and UI
-        Actions.setRoutingState('routing');
+        Actions.setRoutingState({ 
+            state: 'routing'
+        });
 
     }
 
