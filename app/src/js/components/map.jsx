@@ -36,6 +36,7 @@ class Map extends Reflux.Component {
 
 	componentDidMount() {
 
+		// displays routes generated during routing
 		var routesLayer = new ol.layer.Vector({
 			name: 'routesLayer',
 			source: new ol.source.Vector({
@@ -44,6 +45,7 @@ class Map extends Reflux.Component {
 			})
 		});
 
+		// displays highlighted routes - i.e. those selected be user for closer examination
 		var highlightedRoutesLayer = new ol.layer.Vector({
 			name: 'highlightedRoutesLayer',
 			style: this.getHighlightedFeatureStyle,
@@ -53,6 +55,8 @@ class Map extends Reflux.Component {
 			})
 		});
 
+		// displays snap-to features - i.e. closest point and sample single route produced by backed
+		// 	- included to enhance user experience
 		var snapToLayer = new ol.layer.Vector({
 			name: 'snapToLayer',
 			source: new ol.source.Vector({
@@ -61,12 +65,15 @@ class Map extends Reflux.Component {
 			})
 		});
 
+		// proper grouping to contain WMS layers - enforces consistent layer ordering throughout toggling of WMS layers
 		var wmsLayersGroup = new ol.layer.Group();
 
+		// instantiate map object to tie everythig together
 		var map = new ol.Map({
 			target: this.refs.mapContainer,
 			layers: [
 		      	
+		      	// Google maps base layer
 		      	new ol.layer.Tile({
 			        source: new ol.source.OSM({
 			            url: 'http://mt{0-3}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
@@ -87,11 +94,8 @@ class Map extends Reflux.Component {
 
 			],
 			view: new ol.View({
-				//projection: 'EPSG:4326',
-				//sfcenter: [-13626306.53671995, 4549638.757784466], 
-				//madcenter: [-9947818.324464286, 5324462.825544785], //this.to3857( [-89.386311071876291, 43.0767353342079] ),
-				center: [-8573106.89777416, 4706908.00530346],
-				zoom: 13, //13
+				center: [-8573106.89777416, 4706908.00530346], // Washington DC
+				zoom: 13,
 			}),
 			controls: ol.control.defaults({ rotate: false }).extend([
 				this.refs.layerControl.control,
@@ -103,9 +107,11 @@ class Map extends Reflux.Component {
 			])
 		});
 
+		//set event listeners on map click and hover - listeners will trgger routing
 		map.on('click', this.handleMapClick.bind(this));
 		map.on('pointermove', this.handleMapPointerMove.bind(this));
 
+		//save map and layer references to local state
 		this.setState({ 
 			map: map,
 			wmsLayersGroup: wmsLayersGroup,
@@ -182,8 +188,6 @@ class Map extends Reflux.Component {
 	}
 
 	getFeatureStyle(feature, resolution) {
-
-		//console.log('getting base style for ' + feature.get('routeSequence'));
 
 		//starting with default style
 		var fill = new ol.style.Fill({
