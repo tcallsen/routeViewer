@@ -113,6 +113,17 @@ class AppStore extends Reflux.Store {
                 percentComplete: -1
             };
 
+        //update to routing state
+        } else if (desiredState === 'routing') {
+            
+            routingState =  {
+                state: 'routing',
+                startCoord: (!!this.state.routing.startCoord) ? this.state.routing.startCoord : null ,
+                endCoord: (!!this.state.routing.endCoord) ? this.state.routing.endCoord : null ,
+                backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
+                percentComplete: 10
+            };
+
         }
 
         this.setState({
@@ -134,6 +145,8 @@ class AppStore extends Reflux.Store {
                 return;
             } else routingStatus.time = messageDate;
         } */
+
+        console.log(routingStatus);
 
         //update precent complete
         var percentComplete = this.state.routing.percentComplete;
