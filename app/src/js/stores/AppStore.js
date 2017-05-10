@@ -30,8 +30,9 @@ class AppStore extends Reflux.Store {
                 state: false,
                 startCoord: null,
                 endCoord: null,
-                backendStatus: null,
-                percentComplete: -1
+                percentComplete: -1,
+                step: -1,
+                message: null
             },
             layerControlVisible: false,
         };
@@ -91,38 +92,67 @@ class AppStore extends Reflux.Store {
 
         var routingState = {};
 
-        //reset routing to initial statae
+        //handle cases where no desiredRoutingState is supplied - reset routing state
         if (!desiredRoutingState || !desiredRoutingState.state) {
             
             routingState = {
                 state: false,
                 startCoord: null,
                 endCoord: null,
-                backendStatus: null,
-                percentComplete: -1
-            };
-        
-        //update to selecting state
-        } else if (desiredRoutingState.state === 'selecting') {
-            
-            routingState =  {
-                state: 'selecting',
-                startCoord: null,
-                endCoord: null,
-                backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
-                percentComplete: -1
+                percentComplete: -1,
+                step: -1,
+                message: null
             };
 
-        //update to routing state
-        } else if (desiredRoutingState.state === 'routing') {
-            
-            routingState =  {
-                state: 'routing',
-                startCoord: (!!this.state.routing.startCoord) ? this.state.routing.startCoord : null ,
-                endCoord: (!!this.state.routing.endCoord) ? this.state.routing.endCoord : null ,
-                backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
-                percentComplete: 10
-            };
+        //if setting state
+        } else if ( !!desiredRoutingState.state ) {
+
+            //update to selecting state
+            if (desiredRoutingState.state === 'selecting') {
+                
+                routingState = Object.assign( {} , this.state.routing , {
+                    state: 'selecting',
+                    startCoord: null,
+                    endCoord: null,
+                    percentComplete: -1
+                });
+
+            //update to routing state
+            } else if (desiredRoutingState.state === 'routing') {
+                
+                routingState = Object.assign( {} , this.state.routing , {
+                    state: 'routing',
+                    percentComplete: 10
+                });
+
+            }
+
+        /*//if setting step
+        } else if ( !!desiredRoutingState.step ) {
+
+            //update to selecting state
+            if (desiredRoutingState.state === 'selecting') {
+                
+                routingState =  {
+                    state: 'selecting',
+                    startCoord: null,
+                    endCoord: null,
+                    backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
+                    percentComplete: -1
+                };
+
+            //update to routing state
+            } else if (desiredRoutingState.state === 'routing') {
+                
+                routingState = {
+                    state: 'routing',
+                    startCoord: (!!this.state.routing.startCoord) ? this.state.routing.startCoord : null ,
+                    endCoord: (!!this.state.routing.endCoord) ? this.state.routing.endCoord : null ,
+                    backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
+                    percentComplete: 10
+                };
+
+            } */
 
         }
 

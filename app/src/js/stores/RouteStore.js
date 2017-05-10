@@ -51,9 +51,9 @@ class RouteStore extends Reflux.Store {
 
     }
 
-    onSetRoutingState(desiredState) {
+    onSetRoutingState(desiredRoutingState) {
         //reset routes if user is no longer routing or is restarting routing (this will clear routes from map / UI)
-        if (!desiredState || desiredState === 'selecting' || desiredState === 'routing') {
+        if (!desiredRoutingState || desiredRoutingState.state === 'selecting' || desiredRoutingState.state === 'routing') {
             this.setState({
                 snapToFeatures: {},
                 routes: {},
