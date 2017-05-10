@@ -34,6 +34,15 @@ class RoutesListControl extends Reflux.Component {
 
 	}	
 
+	componentWillUpdate(nextProps, nextState) {
+		
+		// check if need to reset selectedRoutes - prevents selectedRoutes from being carried over inbetween routing requests
+		if ( Object.keys(nextState.routes).length === 0 && this.state.selectedRoutes.length) {
+			nextState.selectedRoutes = [];
+		}
+
+	}
+
 	componentDidUpdate(prevProps, prevState) {
 		
 		//strage issues setting event handlers with react when element within OpenLayers - here is my hack
