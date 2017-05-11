@@ -32,7 +32,8 @@ class AppStore extends Reflux.Store {
                 endCoord: null,
                 percentComplete: -1,
                 step: -1,
-                message: null
+                message: null,
+                chartData: []
             },
             layerControlVisible: false,
         };
@@ -93,7 +94,7 @@ class AppStore extends Reflux.Store {
         var routingState = {};
 
         //handle cases where no desiredRoutingState is supplied - reset routing state
-        if (!desiredRoutingState || !desiredRoutingState.state) {
+        if (!desiredRoutingState || typeof desiredRoutingState.state !== 'undefined' && !desiredRoutingState.state) {
             
             routingState = {
                 state: false,
@@ -101,10 +102,11 @@ class AppStore extends Reflux.Store {
                 endCoord: null,
                 percentComplete: -1,
                 step: -1,
-                message: null
+                message: null,
+                chartData: []
             };
 
-        //if setting state
+        //if setting by state (happens via UI interactions)
         } else if ( !!desiredRoutingState.state ) {
 
             //update to selecting state
@@ -114,101 +116,67 @@ class AppStore extends Reflux.Store {
                     state: 'selecting',
                     startCoord: null,
                     endCoord: null,
-                    percentComplete: -1
+                    percentComplete: -1,
+                    step: -1,
+                    message: null,
+                    chartData: []
                 });
 
             //update to routing state
             } else if (desiredRoutingState.state === 'routing') {
-                
+
                 routingState = Object.assign( {} , this.state.routing , {
                     state: 'routing',
-                    percentComplete: 10
+                    percentComplete: 10,
+                    step: -1,
+                    message: null,
+                    chartData: []
                 });
 
             }
 
-        /*//if setting step
-        } else if ( !!desiredRoutingState.step ) {
+        //if setting step (happens via routing status updates from backend)
+        } else if ( typeof desiredRoutingState.step !== 'undefined' ) {
 
-            //update to selecting state
-            if (desiredRoutingState.state === 'selecting') {
-                
-                routingState =  {
-                    state: 'selecting',
-                    startCoord: null,
-                    endCoord: null,
-                    backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
-                    percentComplete: -1
-                };
+            var percentComplete = this.state.routing.percentComplete;
 
-            //update to routing state
-            } else if (desiredRoutingState.state === 'routing') {
-                
-                routingState = {
-                    state: 'routing',
-                    startCoord: (!!this.state.routing.startCoord) ? this.state.routing.startCoord : null ,
-                    endCoord: (!!this.state.routing.endCoord) ? this.state.routing.endCoord : null ,
-                    backendStatus: (!!this.state.routing.backendStatus) ? this.state.routing.backendStatus : null,
-                    percentComplete: 10
-                };
-
-            } */
-
-        }
-
-        this.setState({
-            routing: routingState
-        });
-
-    }
-
-    onUpdateRoutingBackendStatus(routingStatus) {
-
-        //confirm this message is most current, otherwise omit
-        /* if (!!this.state.routing.backendStatus) { //sometimes reached before backendStatus has been saved
-            var messageDate;
-            if (routingStatus.time) {
-                messageDate = new Date( routingStatus.time );
-            }
-            if (!!messageDate && this.state.routing.backendStatus.time && messageDate < this.state.routing.backendStatus.time) {
-                console.log('dropping old message', routingStatus);
-                return;
-            } else routingStatus.time = messageDate;
-        } */
-
-        console.log(routingStatus);
-
-        //update precent complete
-        var percentComplete = this.state.routing.percentComplete;
-        if (routingStatus.step) {
-            
-            if (routingStatus.step == 2) {
-                percentComplete = 10 + ( routingStatus.count[0] * (20/25) );
-            } else if (routingStatus.step == 3) {
+            if (desiredRoutingState.step == 2) {
+                percentComplete = 10 + ( desiredRoutingState.count[0] * (20/25) );
+            } else if (desiredRoutingState.step == 3) {
                 percentComplete +=  Math.floor(Math.random() * 8) + 2 ;
             }  
             
             //check for ERRORS or COMPLETION from backend - update frontend UI 
-            if (routingStatus.step === 4 || routingStatus.step === -1) {
-
+            var finishedState = false;
+            if (desiredRoutingState.step === 4 || desiredRoutingState.step === -1) {
                 percentComplete = 100;
-
                 Actions.setSnapToFeatures([]);
-            
+                finishedState = (desiredRoutingState.step === 4) ? 'complete' : 'failed' ;
             } else if (percentComplete >= 100) percentComplete = 95; //make sure we dont jump ahead too much
-        
+
+            routingState = Object.assign( {} , this.state.routing , {
+                percentComplete: percentComplete,
+                step: desiredRoutingState.step,
+                message: desiredRoutingState.message
+            });
+
+            // apply complete or failed state if routing is complete
+            if (finishedState) {
+                routingState.state = finishedState;
+            }
+
         }
 
         //accumulate routing convergence data for each generation
-        if ( ( routingStatus.step === 3 || routingStatus.step === 4 ) && routingStatus.fitness.length === 3  ) {
+        if ( desiredRoutingState && !!desiredRoutingState.step && ( desiredRoutingState.step === 3 || desiredRoutingState.step === 4 ) && desiredRoutingState.fitness.length === 3  ) {
             // get immutable (new) instance of chart data OR new instance array
-            var chartData = (!!this.state.routing.backendStatus && this.state.routing.backendStatus.chartData) ? [].concat(this.state.routing.backendStatus.chartData) : [ ] ;
-            chartData.push( { name: routingStatus.fitness[0] , best: routingStatus.fitness[1] , avg: routingStatus.fitness[2]} );
-            routingStatus.chartData = chartData;
+            var chartData = (!!this.state.routing && this.state.routing.chartData && this.state.routing.chartData.length) ? [].concat(this.state.routing.chartData) : [] ;
+            chartData.push( { name: desiredRoutingState.fitness[0] , best: desiredRoutingState.fitness[1] , avg: desiredRoutingState.fitness[2]} );
+            routingState.chartData = chartData;
         }
 
         this.setState({
-            routing: Object.assign( this.state.routing , { backendStatus: routingStatus , percentComplete: percentComplete } , (routingStatus.step === 4 || routingStatus.step === -1) ? { state: (routingStatus.step !== -1) ? 'complete' : 'failed' , startCoord: null, endCoord: null, } : {} )
+            routing: routingState
         });
 
     }

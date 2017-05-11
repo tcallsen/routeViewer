@@ -21,10 +21,10 @@ class StatusLabel extends Reflux.Component {
 	render () {
 		
 		var lineChart = null;
-		if (!!this.state.routing.backendStatus && ( this.state.routing.backendStatus.step === 3 || this.state.routing.backendStatus.step === 4 ) && this.state.routing.backendStatus.chartData && this.state.routing.backendStatus.chartData.length > 1 ) {
+		if (!!this.state.routing && ( this.state.routing.step === 3 || this.state.routing.step === 4 ) && this.state.routing.chartData && this.state.routing.chartData.length > 1 ) {
 			lineChart = (
 				<div id="chartContainer">
-					<LineChart width={240} height={260} data={ this.state.routing.backendStatus.chartData } >
+					<LineChart width={240} height={260} data={ this.state.routing.chartData } >
 						<Tooltip />
 						<Line type='monotone' dataKey='best' stroke='#8884d8' strokeWidth={2} isAnimationActive={false} />
 						<Line type="monotone" dataKey="avg" stroke="#82ca9d" strokeWidth={2} isAnimationActive={false} />
@@ -36,7 +36,7 @@ class StatusLabel extends Reflux.Component {
 			<div id="statusLabelContainer">
 
 				<div id="statusMessageContainer">
-					<h5>{ (!!this.state.routing.backendStatus && this.state.routing.backendStatus.message) ? this.state.routing.backendStatus.message : "Getting best route.." }</h5>
+					<h5>{ (!!this.state.routing && this.state.routing.message) ? this.state.routing.message : "Getting best route.." }</h5>
 				</div>
 				
 				{ lineChart }
