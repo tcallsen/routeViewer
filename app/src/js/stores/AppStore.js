@@ -55,7 +55,7 @@ class AppStore extends Reflux.Store {
             //generate next routing state comeplete with routing coords and state updated
             var nextRoutingState = Object.assign( this.state.routing , {
                 state: 'routing',       //would be handled in call to Actions.setRoutingState('routing')
-                percentComplete: 10,    //would be handled in call to Actions.setRoutingState('routing')
+                percentComplete: 0,    //would be handled in call to Actions.setRoutingState('routing')
                 endCoord: clickedPointWkt
             });
 
@@ -109,23 +109,9 @@ class AppStore extends Reflux.Store {
         //if setting by step (happens via routing status updates from backend; takes priority)
         } else if ( typeof desiredRoutingState.step !== 'undefined' ) {
 
-            var percentComplete = this.state.routing.percentComplete;
-
-            if (desiredRoutingState.step == 2) {
-                percentComplete = 10 + ( desiredRoutingState.count[0] * (20/25) );
-            } else if (desiredRoutingState.step == 3) {
-                percentComplete +=  Math.floor(Math.random() * 8) + 2 ;
-            }  
-            
-            //check for ERRORS or COMPLETION from backend - update frontend UI 
-            if (desiredRoutingState.step === 4 || desiredRoutingState.step === -1) {
-                percentComplete = 100;
-                Actions.setSnapToFeatures([]);
-            } else if (percentComplete >= 100) percentComplete = 95; //make sure we dont jump ahead too much
-
             routingState = Object.assign( {} , this.state.routing , {
                 state: desiredRoutingState.state || this.state.routing.state, //attach state from backend if present
-                percentComplete: percentComplete,
+                percentComplete: desiredRoutingState.percentComplete || this.state.routing.percentComplete,
                 step: desiredRoutingState.step,
                 message: desiredRoutingState.message
             });
@@ -168,6 +154,13 @@ class AppStore extends Reflux.Store {
             chartData.push( { name: desiredRoutingState.fitness[0] , best: desiredRoutingState.fitness[1] , avg: desiredRoutingState.fitness[2]} );
             routingState.chartData = chartData;
         }
+
+        //clear snap to features once routing is complete
+        if (routingState.state === 'complete' || routingState.state === 'failed') {
+            Actions.setSnapToFeatures([]);
+        }
+
+        console.log( 'percentComplete: ' , routingState.step , routingState.percentComplete , routingState );
 
         this.setState({
             routing: routingState
