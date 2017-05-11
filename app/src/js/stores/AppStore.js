@@ -33,7 +33,7 @@ class AppStore extends Reflux.Store {
                 percentComplete: -1,
                 step: -1,
                 message: null,
-                chartData: []
+                scoringData: []
             },
             layerControlVisible: false,
         };
@@ -103,7 +103,7 @@ class AppStore extends Reflux.Store {
                 percentComplete: -1,
                 step: -1,
                 message: null,
-                chartData: []
+                scoringData: []
             };
 
         //if setting by step (happens via routing status updates from backend; takes priority)
@@ -129,7 +129,7 @@ class AppStore extends Reflux.Store {
                     percentComplete: -1,
                     step: -1,
                     message: null,
-                    chartData: []
+                    scoringData: []
                 });
 
             //update to routing state
@@ -140,19 +140,27 @@ class AppStore extends Reflux.Store {
                     percentComplete: 10,
                     step: -1,
                     message: null,
-                    chartData: []
+                    scoringData: []
                 });
 
             }
 
         }
 
-        //accumulate routing convergence data for each generation
-        if ( desiredRoutingState && !!desiredRoutingState.step && ( desiredRoutingState.step === 3 || desiredRoutingState.step === 4 ) && desiredRoutingState.fitness.length === 3  ) {
-            // get immutable (new) instance of chart data OR new instance array
-            var chartData = (!!this.state.routing && this.state.routing.chartData && this.state.routing.chartData.length) ? [].concat(this.state.routing.chartData) : [] ;
-            chartData.push( { name: desiredRoutingState.fitness[0] , best: desiredRoutingState.fitness[1] , avg: desiredRoutingState.fitness[2]} );
-            routingState.chartData = chartData;
+        //accumulate routing data for each generation if present
+        if ( !!desiredRoutingState && !!desiredRoutingState.scoringData ) {
+            
+            // populate generation level and population level scoring data into front end only data structure - need immutable structure (charting library will detect data change)
+            var scoringData = (!!this.state.routing && this.state.routing.scoringData && this.state.routing.scoringData.length) ? [].concat(this.state.routing.scoringData) : [] ;
+            
+            //map backend data into re-charts accepted format
+            var populationChartData = Object.values(desiredRoutingState.scoringData.population).map( popEntry => {
+                return { length: popEntry[0] , score: popEntry[1] };
+            });
+
+            scoringData.push( { name: desiredRoutingState.scoringData.generation , best: desiredRoutingState.scoringData.bestFitness , avg: desiredRoutingState.scoringData.avgFitness , population: populationChartData } );
+            routingState.scoringData = scoringData; 
+
         }
 
         //clear snap to features once routing is complete

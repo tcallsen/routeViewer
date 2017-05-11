@@ -323,9 +323,13 @@ div#mapContainerParent.routing-failed div#statusLabelContainer {
     display: block;
 }
 
-div#mapContainerParent div#chartContainer {
-    display: inline-block;
+div#mapContainerParent div.chartContainer {
+    display: block;
     margin: 10px 10px 0 10px;
+}
+
+div#mapContainerParent div.chartContainer div.recharts-wrapper {
+    display: inline-block;
 }
 
 div#mapContainerParent div#statusMessageContainer {
