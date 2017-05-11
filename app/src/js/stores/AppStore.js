@@ -160,7 +160,7 @@ class AppStore extends Reflux.Store {
             Actions.setSnapToFeatures([]);
         }
 
-        console.log( 'percentComplete: ' , routingState.step , routingState.percentComplete , routingState );
+        console.log( 'percentComplete: ' , routingState.step , routingState.percentComplete );
 
         this.setState({
             routing: routingState

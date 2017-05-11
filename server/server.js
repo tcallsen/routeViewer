@@ -43,6 +43,8 @@ app.get('/config.json', function(req, res){
 	//trim non relevate webappConfig options before sending	
 	delete outgoingConfid.routesInterface;
 	delete outgoingConfid.graphDbLocation;
+	delete outgoingConfid.graphScoreDbLocation;
+	delete outgoingConfid.redisInformation;
 
 	//write response
 	res.writeHead(200, {"Content-Type": "application/json"});
