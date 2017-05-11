@@ -106,6 +106,30 @@ class AppStore extends Reflux.Store {
                 chartData: []
             };
 
+        //if setting by step (happens via routing status updates from backend; takes priority)
+        } else if ( typeof desiredRoutingState.step !== 'undefined' ) {
+
+            var percentComplete = this.state.routing.percentComplete;
+
+            if (desiredRoutingState.step == 2) {
+                percentComplete = 10 + ( desiredRoutingState.count[0] * (20/25) );
+            } else if (desiredRoutingState.step == 3) {
+                percentComplete +=  Math.floor(Math.random() * 8) + 2 ;
+            }  
+            
+            //check for ERRORS or COMPLETION from backend - update frontend UI 
+            if (desiredRoutingState.step === 4 || desiredRoutingState.step === -1) {
+                percentComplete = 100;
+                Actions.setSnapToFeatures([]);
+            } else if (percentComplete >= 100) percentComplete = 95; //make sure we dont jump ahead too much
+
+            routingState = Object.assign( {} , this.state.routing , {
+                state: desiredRoutingState.state || this.state.routing.state, //attach state from backend if present
+                percentComplete: percentComplete,
+                step: desiredRoutingState.step,
+                message: desiredRoutingState.message
+            });
+
         //if setting by state (happens via UI interactions)
         } else if ( !!desiredRoutingState.state ) {
 
@@ -133,36 +157,6 @@ class AppStore extends Reflux.Store {
                     chartData: []
                 });
 
-            }
-
-        //if setting step (happens via routing status updates from backend)
-        } else if ( typeof desiredRoutingState.step !== 'undefined' ) {
-
-            var percentComplete = this.state.routing.percentComplete;
-
-            if (desiredRoutingState.step == 2) {
-                percentComplete = 10 + ( desiredRoutingState.count[0] * (20/25) );
-            } else if (desiredRoutingState.step == 3) {
-                percentComplete +=  Math.floor(Math.random() * 8) + 2 ;
-            }  
-            
-            //check for ERRORS or COMPLETION from backend - update frontend UI 
-            var finishedState = false;
-            if (desiredRoutingState.step === 4 || desiredRoutingState.step === -1) {
-                percentComplete = 100;
-                Actions.setSnapToFeatures([]);
-                finishedState = (desiredRoutingState.step === 4) ? 'complete' : 'failed' ;
-            } else if (percentComplete >= 100) percentComplete = 95; //make sure we dont jump ahead too much
-
-            routingState = Object.assign( {} , this.state.routing , {
-                percentComplete: percentComplete,
-                step: desiredRoutingState.step,
-                message: desiredRoutingState.message
-            });
-
-            // apply complete or failed state if routing is complete
-            if (finishedState) {
-                routingState.state = finishedState;
             }
 
         }
