@@ -70,40 +70,10 @@ function checkForRoutes() {
 		
 		var messageObject = JSON.parse( item[1] );
 
-		//parse and send forward new routes
-		if (messageObject.type === 'FeatureCollection') {
-    		Object.keys(io.sockets.connected).forEach( socketKey => {
-				io.sockets.connected[socketKey].emit('newRoute', item[1] );
-			});
-    	}
-
-		//parse and send forward new routestart messages
-		else if (messageObject.type === 'routestart') {
-			Object.keys(io.sockets.connected).forEach( socketKey => {
-				io.sockets.connected[socketKey].emit('routestart', messageObject.guid );
-			});
-		}
-
-		//parse and send forward new routeend messages
-		else if (messageObject.type === 'routeend') {
-			Object.keys(io.sockets.connected).forEach( socketKey => {
-				io.sockets.connected[socketKey].emit('routeend', messageObject.guid );
-			});
-		}
-
-		//prase and send forward new score updates
-		else if (messageObject.type === 'newBestScore') {
-			Object.keys(io.sockets.connected).forEach( socketKey => {
-				io.sockets.connected[socketKey].emit('newBestScore', item[1] );
-			});
-		}
-
-		//prase and send forward new status updates
-		else if (messageObject.type === 'newStatus') {
-			Object.keys(io.sockets.connected).forEach( socketKey => {
-				io.sockets.connected[socketKey].emit('newStatus', item[1] );
-			});
-		}
+		//pass message on down websocket to frontend
+		Object.keys(io.sockets.connected).forEach( socketKey => {
+			io.sockets.connected[socketKey].emit( messageObject.type , item[1] );
+		});
 
 		checkForRoutes();
 
