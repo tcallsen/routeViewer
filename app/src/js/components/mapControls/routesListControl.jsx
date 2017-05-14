@@ -4,10 +4,10 @@ import React from 'react';
 
 import ol from 'openlayers';
 
-import AppStore from '../stores/AppStore.js';
-import RouteStore from '../stores/RouteStore.js';
+import AppStore from '../../stores/AppStore.js';
+import RouteStore from '../../stores/RouteStore.js';
 
-import Actions from '../actions/actions.js';
+import Actions from '../../actions/actions.js';
 
 class RoutesListControl extends Reflux.Component {
 	

@@ -1,21 +1,23 @@
+//externals
+import request from 'superagent';
 import Reflux from 'reflux';
 import ReactDOM from 'react-dom';
 import React from 'react';
 
-import request from 'superagent';
-
-import AppStore from '../stores/AppStore.js';
+//internals
+import Actions from '../actions/actions.js';
+import StatusLabel from './statusLabel.jsx';
 import MapStore from '../stores/MapStore.js';
 import RouteStore from '../stores/RouteStore.js';
-import Actions from '../actions/actions.js';
+import MapLibrary from '../objects/MapLibrary.js';
 
-import LayerControl from '../components/layerControl.jsx';
-import RouteControl from '../components/routeControl.jsx';
-import SettingsControl from '../components/settingsControl.jsx';
-import RerunControl from '../components/rerunControl.jsx';
-import ClearControl from '../components/clearControl.jsx';
-import RoutesListControl from '../components/routesListControl.jsx';
-import StatusLabel from './statusLabel.jsx';
+//import map controls
+import LayerControl from '../components/mapControls/layerControl.jsx';
+import RouteControl from '../components/mapControls/routeControl.jsx';
+import SettingsControl from '../components/mapControls/settingsControl.jsx';
+import RerunControl from '../components/mapControls/rerunControl.jsx';
+import ClearControl from '../components/mapControls/clearControl.jsx';
+import RoutesListControl from '../components/mapControls/routesListControl.jsx';
 
 //open layers and styles
 var ol = require('openlayers');
@@ -24,14 +26,18 @@ require('openlayers/css/ol.css');
 class Map extends Reflux.Component {
 	
 	constructor(props) {
+		
 		super(props);
 		
 		//register MapStore for wms layer information and RouteStore for route vector feature information
 		this.stores = [MapStore, RouteStore];
 
-		this.getFeatureStyle = this.getFeatureStyle.bind(this);
-		this.getHighlightedFeatureStyle = this.getHighlightedFeatureStyle.bind(this);
-	
+		//bind map component as calling context for all functions in MapLibrary
+		this.library = new MapLibrary();
+		Object.keys( this.library ).forEach( libraryFunctionName => {
+			this.library[libraryFunctionName] = this.library[libraryFunctionName].bind(this);
+		});
+
 	}
 
 	componentDidMount() {
@@ -48,7 +54,7 @@ class Map extends Reflux.Component {
 		// displays highlighted routes - i.e. those selected be user for closer examination
 		var highlightedRoutesLayer = new ol.layer.Vector({
 			name: 'highlightedRoutesLayer',
-			style: this.getHighlightedFeatureStyle,
+			style: this.library.getHighlightedFeatureStyle,
 			source: new ol.source.Vector({
 				features:[],
 				wrapX: false
@@ -182,123 +188,13 @@ class Map extends Reflux.Component {
 
 			// dim base routing features if highlighted features are present
 			if ( Object.values( this.state.highlightedRoutes ).length > 0 ) {
-				this.state.routesLayer.setOpacity( .045 );
-			} else this.state.routesLayer.setOpacity( 1 );
-
-	}
-
-	getFeatureStyle(feature, resolution) {
-
-		//starting with default style
-		var fill = new ol.style.Fill({
-			color: 'rgba(255,255,255,0.4)'
-		});
-		var stroke = new ol.style.Stroke({
-			color: '#3399CC',
-			width: 1.25
-		});
-		var styles = [
-			new ol.style.Style({
-				image: new ol.style.Circle({
-					fill: fill,
-					stroke: stroke,
-					radius: 5
-				}),
-				fill: fill,
-				stroke: stroke
-			})
-		];
-
-		return styles;
-
-	}
-
-	getHighlightedFeatureStyle(feature, resolution) {
-
-		var baseStyle = this.getFeatureStyle(feature, resolution);
-
-		if (feature.getGeometry().getType() === 'LineString') {
-			
-			//check if special scoring exists on feature / road - if so highlight
-
-			var containScoringPriotization = false;
-			Object.keys(this.props.config.roadScoringProperties).forEach( metricName => {
-				
-				if (containScoringPriotization) return;
-				
-				var metricDefinition = this.props.config.roadScoringProperties[metricName];
-
-				/* if ( metricName === 'score_highway') {
-					if ( feature.get( 'score_highway' ) === '1.0' ) containScoringPriotization = true;
-				}
-				else */
-
-				if ( typeof feature.get( metricName ) !== 'undefined' && feature.get( metricName ) !== 0 && metricDefinition.value !== 0 ) containScoringPriotization = true;
-
-				/* //debug
-				if ( typeof feature.get( metricName ) !== 'undefined' && metricName !== 'score_highway' ) {
-					console.log( metricName + " scoring encountered!" );
-				} */
-
-			});
-
-			if ( containScoringPriotization ) {
-
-				// SPECIAL highlighting - road has socring priorities
-				
-				var innerStyle = baseStyle[0];
-				innerStyle.setStroke(  
-					new ol.style.Stroke({
-						color: 'rgb(253,141,1)',
-						width: 2.5
-					})
-				);
-
-				var outerStyle = innerStyle.clone();
-				outerStyle.setStroke(  
-					new ol.style.Stroke({
-						color: '#4a9aff',
-						width: 7
-					})
-				);
-
-				baseStyle = [outerStyle, innerStyle];
-
+				this.state.routesLayer.setOpacity( .40 );
+				this.state.snapToLayer.setOpacity( .40 );
 			} else {
-
-				// DEFAULT highlighting - nothing special about road
-				
-				baseStyle[0].setStroke(  
-
-					new ol.style.Stroke({
-						color: 'rgb(253,141,1)',
-						width: 2.5
-					})
-
-				);
-
+				this.state.routesLayer.setOpacity( 1 );
+				this.state.snapToLayer.setOpacity( 1 );
 			}
 
-		} else if (feature.getGeometry().getType() === 'Point') {
-
-			baseStyle[0].setImage(  
-
-				new ol.style.Circle({
-					fill: new ol.style.Fill({
-						color: 'rgba(253,141,1,.5)'
-					}),
-					stroke: new ol.style.Stroke({
-						color: 'rgb(29,142,53)',
-						width: 1.25
-					}),
-					radius: 5
-				})
-
-			);
-
-		} 
-
-		return baseStyle;
 
 	}
 
@@ -307,7 +203,7 @@ class Map extends Reflux.Component {
 		// ROUTING
 		if (this.props.routingState.state === 'selecting') {
 
-			var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
+			var clickedPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.library.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
 
 			Actions.setRoutingCoord( clickedPointWkt );
 
@@ -328,7 +224,7 @@ class Map extends Reflux.Component {
 			if (this.handleMapPointerMove.requestOut) return
 
 			this.handleMapPointerMove.requestOut = true;
-			var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
+			var hoveredPointWkt = (new ol.format.WKT()).writeGeometry( new ol.geom.Point( this.library.to4326(this.state.map.getCoordinateFromPixel(event.pixel)) ) );
 
 			//prepare request based on if retrieving closest point or requesting single route
 			var urlSuffix;
@@ -379,14 +275,6 @@ class Map extends Reflux.Component {
 		}
 		
 
-	}
-
-	to3857( target ) {
-		return ol.proj.transform( target , 'EPSG:4326','EPSG:3857')
-	}
-
-	to4326( target ) {
-		return ol.proj.transform( target , 'EPSG:3857', 'EPSG:4326')	
 	}
 
 	render () {

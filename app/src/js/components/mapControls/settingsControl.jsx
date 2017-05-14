@@ -5,10 +5,10 @@ import React from 'react';
 import ol from 'openlayers';
 import Modal from 'react-modal'; //https://github.com/reactjs/react-modal
 import noUiSlider from 'nouislider';
-require('../../css/nouislider.min.css');
+require('../../../css/nouislider.min.css');
 
-import RouteStore from '../stores/RouteStore.js';
-import Actions from '../actions/actions.js';
+import RouteStore from '../../stores/RouteStore.js';
+import Actions from '../../actions/actions.js';
 
 class SettingsControl extends Reflux.Component {
 	

@@ -4,8 +4,7 @@ import React from 'react';
 
 import ol from 'openlayers';
 
-//import AppStore from '../stores/AppStore.js';
-import Actions from '../actions/actions.js';
+import Actions from '../../actions/actions.js';
 
 class LayerControl extends Reflux.Component {
 	
