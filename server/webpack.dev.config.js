@@ -25,7 +25,6 @@ module.exports = {
           		}
       		},
 			{ test: /\.css$/, loader: "style-loader!css-loader" }
-			//{ test : /\.jsx?/, include : APP_DIR, loader : 'babel' }
 		]
 	}
 };
