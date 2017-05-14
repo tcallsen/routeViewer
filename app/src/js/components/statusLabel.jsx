@@ -44,6 +44,7 @@ class StatusLabel extends Reflux.Component {
 
 	render () {
 
+		//update score by generation chart
 		var generationChart = null;
 		if (!!this.state.routing && ( this.state.routing.step === 3 || this.state.routing.step === 4 ) && this.state.routing.scoringData && this.state.routing.scoringData.length > 1 ) {
 			generationChart = (
@@ -56,6 +57,7 @@ class StatusLabel extends Reflux.Component {
 				</div> );
 		}
 
+		//update score for population chart (if displayed)
 		var populationChart = null;
 		if ( this.state.routing.scoringData.length && this.state.displayedPopulation !== -1 ) {
 			populationChart = (

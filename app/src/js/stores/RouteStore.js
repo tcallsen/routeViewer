@@ -20,16 +20,10 @@ class RouteStore extends Reflux.Store {
 
         // web socket to routes.json
         var socket = io();
-        socket.on('connect', function(){
-            console.log('socket connceted');
-        });
 
         //listener for new Routes & Geo Features sent over WekSocket
         socket.on( 'FeatureCollection' , this.appendNewRoute.bind(this) );
         socket.on( 'newStatus' , this.processNewStatus.bind(this) );
-        /* socket.on( 'newBestScore' , (message) => {
-            var messageJson = JSON.parse(message);
-        }); */
 
         //set default app state
         this.state = {
@@ -77,6 +71,11 @@ class RouteStore extends Reflux.Store {
         routes[ routeIdentifier ] = { 
             features: routeFeatures 
         };
+
+        //highlight newest route
+        if (routeIdentifier !== 'spindle') {
+            Actions.highlightRoutes([routeIdentifier]);
+        }
 
         this.setState({
             routes: routes
