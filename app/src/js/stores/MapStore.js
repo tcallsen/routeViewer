@@ -29,17 +29,19 @@ class MapStore extends Reflux.Store {
     }
 
     onUpdateMapWmsLayerDefinitions(args, guid) {
+        
+        // no guid supplied on initial population of wmsLayerDefinitions at app start - treat as complete overwrite
         if (typeof guid === 'undefined') {
+            
             this.setState( Object.assign( this.state , { wmsLayerDefinitions: args } ) );
+        
+        // guid will be supplied in operation to toggle WMS layer visibility
         } else {
-            var updatedMapLayerDefinitions = this.state.wmsLayerDefinitions;
-            var updateMapLayerDefinition = this.state.wmsLayerDefinitions.getByGuid(guid);
-            Object.keys(args).forEach( argKey => {
-                if (argKey === 'layer') console.log("WARNING - trying to update layer property on wmsLayerDefinitions - may lose track of layer obj reference in map!!")
-                updateMapLayerDefinition[argKey] = args[argKey];
-            });
-            updatedMapLayerDefinitions[guid] = updateMapLayerDefinition;
-            this.setState( Object.assign( this.state , { wmsLayerDefinitions: updatedMapLayerDefinitions } ) );
+
+            this.state.wmsLayerDefinitions.toggleLayerVisibility(guid);
+
+            this.trigger(this.state);
+
         }
     }
 

@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "immutable": "^3.8.1",
     "nouislider": "^9.2.0",
     "openlayers": "^3.20.1",
     "react": "^15.4.2",

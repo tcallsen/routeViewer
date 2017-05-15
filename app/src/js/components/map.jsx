@@ -130,38 +130,50 @@ class Map extends Reflux.Component {
 
 	componentDidUpdate(prevProps, prevState) {
 
+		console.log('map componentDidUpdate', this.state.wmsLayerDefinitions.store === prevState.wmsLayerDefinitions.store );
+
 		// WMS LAYERS has been updated
 
-	    	//console.log('map componentDidUpdate');
+			if ( true || this.state.wmsLayerDefinitions.store !== prevState.wmsLayerDefinitions.store ) {
 
-			var existingEnabled = [];
-			var existingDisabled = [];
-			this.state.wmsLayersGroup.getLayers().getArray().forEach( layer => {
-				existingEnabled.push( layer.get('guid') );
-			});
+				var existingEnabled = [];
+				this.state.wmsLayersGroup.getLayers().getArray().forEach( layer => {
+					existingEnabled.push( layer.get('guid') );
+				});
 
-			var updateEnabled = [];
-			var updateDisabled = [];
-			this.state.wmsLayerDefinitions.getFlatList().forEach( layerDefinition => {
-				if (layerDefinition.enabled) updateEnabled.push( layerDefinition.layer.get('guid') );
-				else updateDisabled.push( layerDefinition.layer.get('guid') );
-			});
+				//determine currently enabled map layers
+				var updateEnabled = [];
+				this.state.wmsLayerDefinitions.getFlatList().forEach( layerDefinition => {
+					if (layerDefinition.enabled) updateEnabled.push( layerDefinition.layer.get('guid') );
+				});
 
-			//add any enabled to map
-			updateEnabled.forEach( layerGuid => {
-				if (existingEnabled.indexOf(layerGuid) == -1) {
-					this.state.wmsLayersGroup.getLayers().push( this.state.wmsLayerDefinitions[layerGuid].layer );
-				}
-			});
+				//add any newly-enabled to map
+				updateEnabled.forEach( layerGuid => {
+					if (existingEnabled.indexOf(layerGuid) === -1) {
+						this.state.wmsLayersGroup.getLayers().push( this.state.wmsLayerDefinitions.getByGuid(layerGuid).layer );
+					}
+				});
 
-			updateDisabled.forEach( layerGuid => {
-				if (existingEnabled.indexOf(layerGuid) != -1) {
-					this.state.wmsLayersGroup.getLayers().remove( this.state.wmsLayerDefinitions[layerGuid].layer );
-				}
-			});
+				//remove any no-longer enabled from map
+				existingEnabled.forEach( layerGuid => {
+					if (updateEnabled.indexOf(layerGuid) === -1) {
+						this.state.wmsLayersGroup.getLayers().remove( this.state.wmsLayerDefinitions.getByGuid(layerGuid).layer );
+					}
+				});
+
+			}
 
 		// MAP FEATURES
 		 
+			// dim base routing features if highlighted features are present
+			if ( Object.values( this.state.highlightedRoutes ).length > 0 ) {
+				this.state.routesLayer.setOpacity( .40 );
+				this.state.snapToLayer.setOpacity( .40 );
+			} else {
+				this.state.routesLayer.setOpacity( 1 );
+				this.state.snapToLayer.setOpacity( 1 );
+			}
+
 			// snap to features (when selecting routing start and end points)
 			this.state.snapToLayer.setSource(
 				new ol.source.Vector({
@@ -185,16 +197,6 @@ class Map extends Reflux.Component {
 					wrapX: false
 				})
 			);
-
-			// dim base routing features if highlighted features are present
-			if ( Object.values( this.state.highlightedRoutes ).length > 0 ) {
-				this.state.routesLayer.setOpacity( .40 );
-				this.state.snapToLayer.setOpacity( .40 );
-			} else {
-				this.state.routesLayer.setOpacity( 1 );
-				this.state.snapToLayer.setOpacity( 1 );
-			}
-
 
 	}
 

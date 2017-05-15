@@ -7,6 +7,8 @@ import xmlDom from 'xmldom';
 global.DOMParser = xmlDom.DOMParser;
 import WMSCapabilities from 'wms-capabilities';
 
+const { Map } = require('immutable');
+
 class WmsLayerDefinitions {
 
 	constructor( wmsUrl ) {
@@ -19,7 +21,11 @@ class WmsLayerDefinitions {
             children: []
         };
 		this.flatList = [];
-	    this.guid = {};
+	    this.guid = {}; // temporary - deleted after population and replaced with immutable this.store
+
+        //immutable interface to data structures - used during react shouldComponentUpdate functions to 
+        // properly detect changes in nested wms layer data objects
+        this.store = new Map();
 
 		request.get( wmsUrl )
             .set('Accept', 'application/xml')
@@ -30,7 +36,13 @@ class WmsLayerDefinitions {
 
                 capabilityLayers.forEach( layerNode => this.recurseWmsMapLayers( this.tree , layerNode ) );
 
-                console.log( 'recieved wms layers:', this );
+                // create immutable Map to store WMS layer definitions and track when they are modified
+                //  - store object must only be shallowly immutable since nested map layer definition will contain openlayers 
+                //      ol.Layer objects, which we MUST retrain object references too for interactions with openlayers
+                this.store = new Map( this.guid );
+                delete this.guid;
+
+                console.log( 'recieved wms layers:', this.store );
 
                 //save updates made 
                 Actions.updateMapWmsLayerDefinitions( this );
@@ -74,8 +86,14 @@ class WmsLayerDefinitions {
 
     }
 
+    toggleLayerVisibility( layerGuid ) {
+        var wmsLayerDefinition = this.store.get(layerGuid);
+        wmsLayerDefinition.enabled = !wmsLayerDefinition.enabled;
+        this.store = this.store.set( layerGuid , wmsLayerDefinition );
+    }
+
     getByGuid( layerGuid ) {
-        return this.guid[layerGuid];
+        return this.store.get(layerGuid);
     }
 
     getFlatList() {
