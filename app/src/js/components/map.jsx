@@ -130,8 +130,6 @@ class Map extends Reflux.Component {
 
 	componentDidUpdate(prevProps, prevState) {
 
-		console.log('map componentDidUpdate', this.state.wmsLayerDefinitions.store === prevState.wmsLayerDefinitions.store );
-
 		// WMS LAYERS has been updated
 
 			if ( true || this.state.wmsLayerDefinitions.store !== prevState.wmsLayerDefinitions.store ) {
@@ -163,40 +161,51 @@ class Map extends Reflux.Component {
 
 			}
 
-		// MAP FEATURES
-		 
-			// dim base routing features if highlighted features are present
-			if ( Object.values( this.state.highlightedRoutes ).length > 0 ) {
-				this.state.routesLayer.setOpacity( .40 );
-				this.state.snapToLayer.setOpacity( .40 );
-			} else {
-				this.state.routesLayer.setOpacity( 1 );
-				this.state.snapToLayer.setOpacity( 1 );
-			}
+		// MAP FEATURES - updates only if respective Immutable data structure has been changed
 
 			// snap to features (when selecting routing start and end points)
-			this.state.snapToLayer.setSource(
-				new ol.source.Vector({
-					features: [].concat.apply([], Object.values( this.state.snapToFeatures ).map( snapToFeature => { return snapToFeature.features; } ) ),
-					wrapX: false
-				})
-			);
+			if ( prevState.snapToFeatures !== this.state.snapToFeatures ) {
+				console.log('map componentDidUpate snapToFeatures' );
+				this.state.snapToLayer.setSource(
+					new ol.source.Vector({
+						features: [].concat.apply( [], this.state.snapToFeatures.valueSeq().toArray() ), //flatten routing features into single array
+						wrapX: false
+					})
+				);
+			}
 
 			// route features (routes returned from routing)
-			this.state.routesLayer.setSource(
-				new ol.source.Vector({
-					features: [].concat.apply([], Object.values( this.state.routes ).map( route => { return route.features; } ) ), //flatten routing features into single array
-					wrapX: false
-				})
-			);
+			if ( prevState.routes !== this.state.routes ) {
+				console.log('map componentDidUpate routes' );
+				this.state.routesLayer.setSource(
+					new ol.source.Vector({
+						features: [].concat.apply( [], this.state.routes.valueSeq().toArray() ), //flatten routing features into single array
+						wrapX: false
+					})
+				);
+			}
 
 			// highlighted route features (routes hovered orselected from discovered routes list)
-			this.state.highlightedRoutesLayer.setSource(
-				new ol.source.Vector({
-					features: [].concat.apply([], Object.values( this.state.highlightedRoutes ).map( route => { return route.features; } ) ), //flatten routing features into single array
-					wrapX: false
-				})
-			);
+			if ( prevState.highlightedRoutes !== this.state.highlightedRoutes ) {
+				console.log('map componentDidUpate highlightedRoutes' );
+
+				this.state.highlightedRoutesLayer.setSource(
+					new ol.source.Vector({
+						features: [].concat.apply( [], this.state.highlightedRoutes.valueSeq().toArray() ), //flatten routing features into single array
+						wrapX: false
+					})
+				);
+
+				// dim base routing features if highlighted features are present
+				if ( this.state.highlightedRoutes.size > 0 ) {
+					this.state.routesLayer.setOpacity( .40 );
+					this.state.snapToLayer.setOpacity( .40 );
+				} else {
+					this.state.routesLayer.setOpacity( 1 );
+					this.state.snapToLayer.setOpacity( 1 );
+				}
+
+			}
 
 	}
 

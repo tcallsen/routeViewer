@@ -37,7 +37,7 @@ class RoutesListControl extends Reflux.Component {
 	componentWillUpdate(nextProps, nextState) {
 		
 		// check if need to reset selectedRoutes - prevents selectedRoutes from being carried over inbetween routing requests
-		if ( Object.keys(nextState.routes).length === 0 && this.state.selectedRoutes.length) {
+		if ( nextState.routes.size === 0 && this.state.selectedRoutes.length) {
 			nextState.selectedRoutes = [];
 		}
 
@@ -58,9 +58,9 @@ class RoutesListControl extends Reflux.Component {
 
 	getRoutesListElements() {
 
-		var routeListElements = Object.keys(this.state.routes).map( (routeSequence) => {
+		var routeListElements = this.state.routes.keySeq().map( (routeSequence) => {
 			if (routeSequence === 'spindle') return; //skip spindle entries
-			var route = this.state.routes[routeSequence];
+			var route = this.state.routes.get(routeSequence);
  			var liClassName = ( this.state.selectedRoutes.indexOf(parseInt(routeSequence)) > -1 ) ? 'routesListItem selected' : 'routesListItem' ;
 		 	return (
 		 		<li className={liClassName} key={'routesListItem-'+routeSequence} >

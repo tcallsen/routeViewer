@@ -9,6 +9,8 @@ import AppStore from './AppStore.js';
 
 import Actions from '../actions/actions.js';
 
+const { Map } = require('immutable');
+
 class RouteStore extends Reflux.Store {
 
     constructor() {
@@ -33,9 +35,9 @@ class RouteStore extends Reflux.Store {
             },
             previousRoutingRequest: null,
             socket: socket,
-            routes: {},
-            highlightedRoutes: {},
-            snapToFeatures: {}
+            routes: new Map(),
+            highlightedRoutes: new Map(),
+            snapToFeatures: new Map()
         };
 
     }
@@ -44,9 +46,9 @@ class RouteStore extends Reflux.Store {
         //reset routes if user is no longer routing or is restarting routing (this will clear routes from map / UI)
         if (!desiredRoutingState || desiredRoutingState.state === 'selecting' || desiredRoutingState.state === 'routing') {
             this.setState({
-                snapToFeatures: {},
-                routes: {},
-                highlightedRoutes: {}
+                snapToFeatures: new Map(),
+                routes: new Map(),
+                highlightedRoutes: new Map()
             });
         } 
     }
@@ -66,16 +68,9 @@ class RouteStore extends Reflux.Store {
         //establish route identifier (usually based on routeSequence from backend, however routing spindles do not have a routeSequence)
         var routeIdentifier = ( typeof routeFeatures[0].get('routeSequence') !== 'undefined' ) ? routeFeatures[0].get('routeSequence') : 'spindle' ;
 
-        //save features to RouteStore state at routeSequence and communicate out to UI
+        //save route features to Immutabale data structure in state at key routeSequence and communicate out to UI
         var routes = this.state.routes;
-        routes[ routeIdentifier ] = { 
-            features: routeFeatures 
-        };
-
-        //highlight newest route
-        if (routeIdentifier !== 'spindle') {
-            Actions.highlightRoutes([routeIdentifier]);
-        }
+        routes = routes.set( routeIdentifier , routeFeatures );
 
         this.setState({
             routes: routes
@@ -88,18 +83,16 @@ class RouteStore extends Reflux.Store {
         var highlightedRoutes = this.state.highlightedRoutes;
 
         //remove any routes that are no longer highlighted
-        Object.keys( highlightedRoutes ).forEach( previouslyHighlightRouteSequence => {
+        highlightedRoutes.keySeq().forEach( previouslyHighlightRouteSequence => {
             if ( highlightedRouteSequences.indexOf( previouslyHighlightRouteSequence ) == -1 ) {
-                delete highlightedRoutes[previouslyHighlightRouteSequence];
+                highlightedRoutes = highlightedRoutes.delete( previouslyHighlightRouteSequence );
             }
-        } )
+        });
 
         //add any newly highlighted routes
         highlightedRouteSequences.forEach( highlightedRouteSequence => {
-            if ( !highlightedRoutes[highlightedRouteSequence] ) {
-                highlightedRoutes[highlightedRouteSequence] = {
-                    features: this.state.routes[highlightedRouteSequence].features
-                };
+            if ( !highlightedRoutes.has(highlightedRouteSequence) ) {
+                highlightedRoutes = highlightedRoutes.set( highlightedRouteSequence , this.state.routes.get(highlightedRouteSequence) );
             }
         });
 
@@ -161,9 +154,17 @@ class RouteStore extends Reflux.Store {
     }
 
     onSetSnapToFeatures(snapToFeatures) {
-        this.setState({
-            snapToFeatures: this.featureArrayToObject( snapToFeatures )
+        
+        //convert supplied snapToFeatures array into Immutable Map
+        var featuresMap = new Map();
+        snapToFeatures.forEach( feature => {
+            featuresMap = featuresMap.set( feature.get('id') , feature )
         });
+
+        this.setState({
+            snapToFeatures: featuresMap
+        });
+
     }
 
     onExecuteRoutingRequest(routingRequestBody, endpointAddition, callback) {
@@ -197,16 +198,6 @@ class RouteStore extends Reflux.Store {
             });
         }
 
-    }
-
-    featureArrayToObject( features , property = 'id' ) {
-        var featuresObject = {};
-        features.forEach( feature => {
-            featuresObject[feature.get(property)] = {
-                features: [feature]
-            };
-        });
-        return featuresObject;
     }
 
 }
