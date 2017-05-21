@@ -41,6 +41,13 @@ class RoutesListControl extends Reflux.Component {
 			nextState.selectedRoutes = [];
 		}
 
+		// check to automatically select / highlight best route upon routing completion (bit of a hack..)
+		if ( this.props.routingState.state === 'routing' && nextProps.routingState.state === 'complete' ) {
+			this.setState({
+				selectedRoutes: [ this.state.routes.keySeq().last() ]
+			});
+		}
+
 	}
 
 	componentDidUpdate(prevProps, prevState) {

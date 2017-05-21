@@ -9,7 +9,7 @@ import AppStore from './AppStore.js';
 
 import Actions from '../actions/actions.js';
 
-const { Map } = require('immutable');
+const { Map, OrderedMap } = require('immutable');
 
 class RouteStore extends Reflux.Store {
 
@@ -35,7 +35,7 @@ class RouteStore extends Reflux.Store {
             },
             previousRoutingRequest: null,
             socket: socket,
-            routes: new Map(),
+            routes: new OrderedMap(),
             highlightedRoutes: new Map(),
             snapToFeatures: new Map()
         };
@@ -47,7 +47,7 @@ class RouteStore extends Reflux.Store {
         if (!desiredRoutingState || desiredRoutingState.state === 'selecting' || desiredRoutingState.state === 'routing') {
             this.setState({
                 snapToFeatures: new Map(),
-                routes: new Map(),
+                routes: new OrderedMap(),
                 highlightedRoutes: new Map()
             });
         } 
@@ -75,6 +75,13 @@ class RouteStore extends Reflux.Store {
         this.setState({
             routes: routes
         });
+
+        //hack for highlighting route - need to delay so that route is available in store prior to highlighting
+        if (routeIdentifier !== 'spindle') {
+            setTimeout( () => {
+                this.onHighlightRoutes([routeIdentifier]);
+            },250);
+        }
 
     }
 
