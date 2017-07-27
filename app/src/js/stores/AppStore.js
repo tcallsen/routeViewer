@@ -12,20 +12,13 @@ class AppStore extends Reflux.Store {
         //listenables
         this.listenables = Actions;
 
-        //load webappConfig from backend (contains things like routing REST endpoint, etc.)
-        request.get('/config.json')
-            .set('Accept', 'application/json')
-            .end( (err, res) => {
-                this.setState({
-                    config: Object.assign( {} , this.state.config , res.body )
-                });
-                Actions.setRoutingConfigParameters( res.body.roadScoringProperties );
-                console.log( 'config loaded from backend:' , this.state.config );
-            });
+        //track configPromise resolver function
+        var configPromiseResolver;
 
         //set default app state
         this.state = {
             config: {},
+            configPromise: new Promise( (resolve) => { configPromiseResolver = resolve } ),
             routing: {
                 state: false,
                 startCoord: null,
@@ -37,6 +30,19 @@ class AppStore extends Reflux.Store {
             },
             layerControlVisible: false,
         };
+
+        //load webappConfig from backend (contains things like routing REST endpoint, etc.)
+        request.get('/config.json')
+            .set('Accept', 'application/json')
+            .end( (err, res) => {
+                this.setState({
+                    config: Object.assign( {} , this.state.config , res.body )
+                });
+                //resolve promise to notify listening components that config is ready
+                configPromiseResolver();
+                Actions.setRoutingConfigParameters( res.body.roadScoringProperties );
+                console.log( 'config loaded from backend:' , this.state.config );
+            });
 
     }
 

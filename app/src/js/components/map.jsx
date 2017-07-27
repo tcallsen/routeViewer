@@ -7,6 +7,7 @@ import React from 'react';
 //internals
 import Actions from '../actions/actions.js';
 import StatusLabel from './statusLabel.jsx';
+import AppStore from '../stores/AppStore.js';
 import MapStore from '../stores/MapStore.js';
 import RouteStore from '../stores/RouteStore.js';
 import MapLibrary from '../objects/MapLibrary.js';
@@ -101,6 +102,7 @@ class Map extends Reflux.Component {
 			],
 			view: new ol.View({
 				center: [-8573106.89777416, 4706908.00530346], // Washington DC
+				//center: [-11717826.451886375, 4869327.421667797], // Boulder CO
 				zoom: 13,
 			}),
 			controls: ol.control.defaults({ rotate: false }).extend([
@@ -124,6 +126,11 @@ class Map extends Reflux.Component {
 			routesLayer: routesLayer,
 			highlightedRoutesLayer: highlightedRoutesLayer,
 			snapToLayer: snapToLayer
+		});
+
+		//set map center once config has loaded prior
+		AppStore.state.configPromise.then( () => {
+			map.getView().setCenter( AppStore.state.config.mapCenter );
 		});
 
 	}

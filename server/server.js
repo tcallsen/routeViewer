@@ -33,32 +33,30 @@
 		console.log(webappConfig);
 	});
 
-	// routes
+	// index.html - static html with includes react js bundle
+	app.get('/', function(req, res){
+		res.sendFile(__dirname + '/static/index.html');
+	});
 
-		// index.html - static html with includes react js bundle
-		app.get('/', function(req, res){
-			res.sendFile(__dirname + '/static/index.html');
-		});
+	// static files
+	app.use('/static', express.static(path.join(__dirname, 'static')))
 
-		// static files
-		app.use('/static', express.static(path.join(__dirname, 'static')))
+	// web app config - expose web app config to frontend (with certain server-only properties redacted)
+	app.get('/config.json', function(req, res){
 
-		// web app config - expose web app config to frontend (with certain server-only properties redacted)
-		app.get('/config.json', function(req, res){
-	
-			var outgoingConfid = Object.assign( {} , webappConfig );
-			
-			//trim non relevate webappConfig options before sending	
-			delete outgoingConfid.routesInterface;
-			delete outgoingConfid.graphDbLocation;
-			delete outgoingConfid.graphScoreDbLocation;
-			delete outgoingConfid.redisInformation;
+		var outgoingConfid = Object.assign( {} , webappConfig );
+		
+		//trim non relevate webappConfig options before sending	
+		delete outgoingConfid.routesInterface;
+		delete outgoingConfid.graphDbLocation;
+		delete outgoingConfid.graphScoreDbLocation;
+		delete outgoingConfid.redisInformation;
 
-			//write response
-			res.writeHead(200, {"Content-Type": "application/json"});
-			res.end( JSON.stringify( outgoingConfid ) );
+		//write response
+		res.writeHead(200, {"Content-Type": "application/json"});
+		res.end( JSON.stringify( outgoingConfid ) );
 
-		});
+	});
 
 // redis
 

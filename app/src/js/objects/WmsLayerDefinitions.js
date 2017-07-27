@@ -1,6 +1,8 @@
 import ol from 'openlayers';
 import request from 'superagent';
 
+import AppStore from '../stores/AppStore.js';
+
 import Actions from '../actions/actions.js';
 
 import xmlDom from 'xmldom';
@@ -11,7 +13,7 @@ const { Map } = require('immutable');
 
 class WmsLayerDefinitions {
 
-	constructor( wmsUrl ) {
+	constructor() {
 
 		//instance variables - provide different ways to access to wms layer objects 
 		this.tree = {
@@ -27,7 +29,13 @@ class WmsLayerDefinitions {
         // properly detect changes in nested wms layer data objects
         this.store = new Map();
 
-		request.get( wmsUrl )
+        //wait until config has been loaded to execute remaining logic
+        AppStore.state.configPromise.then( () => {
+
+            //retrieve wms map layers
+            var wmsUrl = AppStore.state.config.geoserverInformation.url + 'ows?service=wms&version=1.1.1&request=GetCapabilities';
+
+            request.get( wmsUrl )
             .set('Accept', 'application/xml')
             .end( (err, res) => {
     
@@ -49,6 +57,8 @@ class WmsLayerDefinitions {
 
             });
 
+        });
+
 	}
 
     recurseWmsMapLayers(parentNode, layerNode) {
@@ -57,7 +67,7 @@ class WmsLayerDefinitions {
         var olLayer = new ol.layer.Tile({
             extent: [ layerNode.BoundingBox[0].extent[0] , layerNode.BoundingBox[0].extent[1] , layerNode.BoundingBox[0].extent[2] , layerNode.BoundingBox[0].extent[3] ],
             source: new ol.source.TileWMS(({
-                url: 'http://costia.gritto.net:8880/geoserver/route/wms',
+                url: AppStore.state.config.geoserverInformation.url + AppStore.state.config.geoserverInformation.workspace + '/wms',
                 params: {'LAYERS': layerNode.Name , 'TILED': true},
                 serverType: 'geoserver'
             })),

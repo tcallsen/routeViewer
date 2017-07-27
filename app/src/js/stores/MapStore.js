@@ -3,8 +3,6 @@ import Reflux from 'reflux';
 import io from 'socket.io-client';
 import ol from 'openlayers';
 
-import AppStore from './AppStore.js';
-
 import WmsLayerDefinitions from '../objects/WmsLayerDefinitions.js';
 
 import Actions from '../actions/actions.js';
@@ -18,12 +16,9 @@ class MapStore extends Reflux.Store {
         //listenables
         this.listenables = Actions;
 
-        //retrieve wms map layers
-        var wmsUrl = 'http://costia.gritto.net:8880/geoserver/ows?service=wms&version=1.1.1&request=GetCapabilities';
-
         //set default app state
         this.state = {
-            wmsLayerDefinitions: new WmsLayerDefinitions(wmsUrl)
+            wmsLayerDefinitions: new WmsLayerDefinitions()
         };
 
     }
