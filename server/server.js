@@ -1,5 +1,11 @@
 // imports and initialization
 
+	//parse command line arguments
+	var isDev = false;
+	process.argv.forEach(function (val, index, array) {
+		if (val === 'dev') isDev = true;
+	});
+
 	//load app config
 	var webappConfig = require('/etc/gritto/graphWebApi.conf.json');
 
@@ -12,17 +18,20 @@
 
 	// webpack - compilation of javascript code and serving to frontend
 	var webpack = require('webpack');
-	var webpackDevMiddleware = require('webpack-dev-middleware');
-	var webpackHotMiddleware = require('webpack-hot-middleware');
-	var webpackConfig = require('./webpack.dev.config');
-	var compiler = webpack(webpackConfig);
-	app.use(webpackDevMiddleware(compiler, {
-	    publicPath: webpackConfig.output.publicPath,
-	    stats: {colors: true}
-	}));
-	app.use(webpackHotMiddleware(compiler, {
-	    log: console.log
-	}))
+	if (isDev){
+		console.log('initializing in DEV mode - starting webpack dev server')
+		var webpackDevMiddleware = require('webpack-dev-middleware');
+		var webpackHotMiddleware = require('webpack-hot-middleware');
+		var webpackConfig = require('./webpack.dev.config');
+		var compiler = webpack(webpackConfig);
+		app.use(webpackDevMiddleware(compiler, {
+		    publicPath: webpackConfig.output.publicPath,
+		    stats: {colors: true}
+		}));
+		app.use(webpackHotMiddleware(compiler, {
+		    log: console.log
+		}))
+	}
 
 // http server
 
@@ -40,6 +49,11 @@
 
 	// static files
 	app.use('/static', express.static(path.join(__dirname, 'static')))
+
+	// build files
+	if (!isDev){
+		app.use('/build', express.static(path.join(__dirname, '../app/build')))
+	}
 
 	// web app config - expose web app config to frontend (with certain server-only properties redacted)
 	app.get('/config.json', function(req, res){

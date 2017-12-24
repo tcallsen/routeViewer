@@ -20,8 +20,8 @@ module.exports = {
 		APP_DIR + '/js/app.jsx'
 	],
 	output: {
-		path: path.join(__dirname, '../app_dist/'),
-		filename: 'dist.js'
+		path: path.join(__dirname, '../app/build/'),
+		filename: 'bundle.js'
 	},
 	module: {
 		loaders: [
